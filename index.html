@@ -9,38 +9,92 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       font-family: Arial, sans-serif;
-      padding: 30px;
+    }
+
+    body {
+      margin: 0;
       background: #f4f7f9;
     }
 
-    .box {
-      max-width: 400px;
+    header {
+      background: #0b7a4b;
+      color: white;
+      padding: 22px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 600px;
       margin: auto;
+      padding: 20px;
+    }
+
+    .card {
       background: white;
       padding: 25px;
+      margin: 20px 0;
       border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
     }
 
     input {
       width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      box-sizing: border-box;
+      padding: 13px;
+      margin: 8px 0 15px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
     }
 
     button {
       width: 100%;
-      padding: 12px;
-      margin-top: 10px;
+      padding: 13px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 7px;
       background: #0b7a4b;
       color: white;
-      border: none;
-      border-radius: 6px;
+      font-size: 15px;
     }
 
-    #message {
+    .logout {
+      background: #555;
+    }
+
+    .balance {
+      font-size: 32px;
+      font-weight: bold;
+      color: #0b7a4b;
+    }
+
+    .fee {
+      font-size: 30px;
+      font-weight: bold;
+      color: #0b7a4b;
+      margin: 15px 0;
+    }
+
+    .payment {
+      background: #eef8f3;
+      padding: 15px;
+      border-radius: 8px;
+      line-height: 1.8;
+    }
+
+    .status {
+      padding: 12px;
+      background: #fff3cd;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message {
       margin-top: 15px;
     }
   </style>
@@ -48,29 +102,124 @@
 
 <body>
 
-<div class="box">
+<header>
+  <h1>TaskReward</h1>
+  <p>Complete available tasks and earn rewards.</p>
+</header>
 
-  <h2>TaskReward</h2>
+<div class="container">
 
-  <input
-    type="email"
-    id="email"
-    placeholder="Email"
-  >
+  <!-- AUTH -->
 
-  <input
-    type="password"
-    id="password"
-    placeholder="Password"
-  >
+  <div id="authBox" class="card">
 
-  <button onclick="registerUser()">
-    Create Account
-  </button>
+    <h2>Login / Register</h2>
 
-  <p id="message"></p>
+    <input
+      type="email"
+      id="email"
+      placeholder="Email address"
+    >
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+    >
+
+    <button onclick="registerUser()">
+      Create Account
+    </button>
+
+    <button onclick="loginUser()">
+      Login
+    </button>
+
+    <p id="authMessage" class="message"></p>
+
+  </div>
+
+
+  <!-- DASHBOARD -->
+
+  <div id="dashboard" class="hidden">
+
+    <div class="card">
+
+      <button class="logout" onclick="logoutUser()">
+        Logout
+      </button>
+
+      <h2>My Dashboard</h2>
+
+      <p>Your balance</p>
+
+      <div class="balance">
+        ₦<span id="balance">0.00</span>
+      </div>
+
+    </div>
+
+
+    <!-- ACTIVATION -->
+
+    <div id="activationBox" class="card">
+
+      <h2>🔐 Activate Your Account</h2>
+
+      <div id="activationStatus" class="status">
+        Your account is not activated.
+      </div>
+
+      <p>Activation fee:</p>
+
+      <div class="fee">
+        ₦1,000
+      </div>
+
+      <div class="payment">
+
+        <strong>Payment Details</strong><br>
+
+        Bank: PalmPay<br>
+
+        Account Name: Light Chigenu<br>
+
+        Account Number: 9137539601
+
+      </div>
+
+      <br>
+
+      <p>
+        After making the payment, submit your activation
+        request. Your payment must be verified by an admin.
+      </p>
+
+      <button onclick="requestActivation()">
+        I've Made the Payment
+      </button>
+
+    </div>
+
+
+    <!-- ACTIVATED MESSAGE -->
+
+    <div id="activatedBox" class="card hidden">
+
+      <h2>✅ Account Activated</h2>
+
+      <p>
+        Your account is active. You can now access available
+        earning tasks.
+      </p>
+
+    </div>
+
+  </div>
 
 </div>
+
 
 <script>
 
@@ -87,6 +236,13 @@ supabase.createClient(
 );
 
 
+let currentUser = null;
+
+
+/* =========================
+   REGISTER
+========================= */
+
 async function registerUser() {
 
   const email =
@@ -96,7 +252,7 @@ async function registerUser() {
     document.getElementById("password").value;
 
   const message =
-    document.getElementById("message");
+    document.getElementById("authMessage");
 
 
   if (!email || !password) {
@@ -125,18 +281,303 @@ async function registerUser() {
   if (error) {
 
     message.innerText =
-      "Error: " + error.message;
+      error.message;
 
     return;
   }
 
 
   message.innerText =
-    "Account created! Check your email if confirmation is required.";
+    "Account created. Check your email to confirm your account.";
 
 }
+
+
+/* =========================
+   LOGIN
+========================= */
+
+async function loginUser() {
+
+  const email =
+    document.getElementById("email").value.trim();
+
+  const password =
+    document.getElementById("password").value;
+
+  const message =
+    document.getElementById("authMessage");
+
+
+  if (!email || !password) {
+
+    message.innerText =
+      "Enter your email and password.";
+
+    return;
+  }
+
+
+  message.innerText =
+    "Logging in...";
+
+
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword({
+
+      email: email,
+
+      password: password
+
+    });
+
+
+  if (error) {
+
+    message.innerText =
+      error.message;
+
+    return;
+  }
+
+
+  currentUser =
+    data.user;
+
+
+  await loadProfile();
+
+}
+
+
+/* =========================
+   LOAD PROFILE
+========================= */
+
+async function loadProfile() {
+
+  document
+    .getElementById("authBox")
+    .classList.add("hidden");
+
+  document
+    .getElementById("dashboard")
+    .classList.remove("hidden");
+
+
+  let { data: profile, error } =
+    await supabaseClient
+    .from("profiles")
+    .select("*")
+    .eq("id", currentUser.id)
+    .single();
+
+
+  if (error) {
+
+    /*
+      If the profile does not exist,
+      create one.
+    */
+
+    const result =
+      await supabaseClient
+      .from("profiles")
+      .insert({
+
+        id: currentUser.id,
+
+        email: currentUser.email,
+
+        is_admin: false,
+
+        is_activated: false,
+
+        balance: 0
+
+      })
+      .select()
+      .single();
+
+
+    if (result.error) {
+
+      alert(
+        "Profile error: " +
+        result.error.message
+      );
+
+      return;
+    }
+
+
+    profile =
+      result.data;
+  }
+
+
+  document.getElementById("balance")
+    .innerText =
+    Number(profile.balance || 0).toFixed(2);
+
+
+  if (profile.is_activated) {
+
+    document
+      .getElementById("activationBox")
+      .classList.add("hidden");
+
+    document
+      .getElementById("activatedBox")
+      .classList.remove("hidden");
+
+  } else {
+
+    checkActivation();
+
+  }
+
+}
+
+
+/* =========================
+   ACTIVATION REQUEST
+========================= */
+
+async function requestActivation() {
+
+  const status =
+    document.getElementById("activationStatus");
+
+
+  const { data: existing, error: checkError } =
+    await supabaseClient
+    .from("activation_requests")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .eq("status", "pending");
+
+
+  if (checkError) {
+
+    status.innerText =
+      checkError.message;
+
+    return;
+  }
+
+
+  if (existing && existing.length > 0) {
+
+    status.innerText =
+      "⏳ Your activation request is already pending.";
+
+    return;
+  }
+
+
+  const { error } =
+    await supabaseClient
+    .from("activation_requests")
+    .insert({
+
+      user_id: currentUser.id,
+
+      amount: 1000,
+
+      status: "pending"
+
+    });
+
+
+  if (error) {
+
+    status.innerText =
+      error.message;
+
+    return;
+  }
+
+
+  status.innerText =
+    "⏳ Activation request submitted. Waiting for admin verification.";
+
+}
+
+
+/* =========================
+   CHECK ACTIVATION
+========================= */
+
+async function checkActivation() {
+
+  const { data } =
+    await supabaseClient
+    .from("activation_requests")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .order("created_at", {
+      ascending: false
+    })
+    .limit(1);
+
+
+  if (!data || data.length === 0) {
+
+    return;
+  }
+
+
+  if (data[0].status === "pending") {
+
+    document
+      .getElementById("activationStatus")
+      .innerText =
+      "⏳ Your activation request is waiting for admin verification.";
+
+  }
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+async function logoutUser() {
+
+  await supabaseClient.auth.signOut();
+
+  location.reload();
+
+}
+
+
+/* =========================
+   SESSION
+========================= */
+
+async function checkSession() {
+
+  const { data } =
+    await supabaseClient.auth.getSession();
+
+
+  if (data.session) {
+
+    currentUser =
+      data.session.user;
+
+    await loadProfile();
+
+  }
+
+}
+
+
+checkSession();
 
 </script>
 
 </body>
-</html>
+  </html>
