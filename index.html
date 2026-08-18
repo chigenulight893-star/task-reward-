@@ -154,7 +154,7 @@
       placeholder="Password"
     >
 
-    <button onclick="alert('Button is working')">
+    <button onclick="registerUser()">
   Create Account
     </button>
 
@@ -301,62 +301,53 @@ let currentProfile = null;
    REGISTER
 ========================= */
 
-async function registerUser() {
-
-  const email =
-    document.getElementById("email").value.trim();
-
-  const password =
-    document.getElementById("password").value;
+):
+  async function registerUser() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
 
   if (!email || !password) {
-
-    showMessage(
-      "Enter your email and password."
-    );
-
+    showMessage("Please enter your email and password.");
     return;
   }
 
-  const { data, error } =
-    await supabaseClient.auth.signUp({
-      email: email,
-      password: password
-    });
+  if (password.length < 6) {
+    showMessage("Password must be at least 6 characters.");
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: email,
+    password: password
+  });
 
   if (error) {
-
     showMessage(error.message);
-
     return;
   }
 
-  if (data.user) {
-
-    const { error: profileError } =
-      await supabaseClient
-      .from("profiles")
-      .insert({
-        id: data.user.id,
-        email: email,
-        is_admin: false,
-        is_activated: false,
-        balance: 0
-      });
-
-    if (profileError) {
-
-      showMessage(
-        profileError.message
-      );
-
-      return;
-    }
+  if (!data.user) {
+    showMessage("Account created. Check your email to confirm your account.");
+    return;
   }
 
-  showMessage(
-    "Account created. Check your email if confirmation is required."
-  );
+  const { error: profileError } = await supabaseClient
+    .from("profiles")
+    .insert({
+      id: data.user.id,
+      email: email,
+      is_admin: false,
+      is_activated: false,
+      balance: 0
+    });
+
+  if (profileError) {
+    showMessage(profileError.message);
+    return;
+  }
+
+  showMessage("Account created successfully!");
+}
 }
 
 
