@@ -111,32 +111,33 @@
 
   <!-- AUTH -->
 
-  <div id="authBox" class="card">
+  <div class="card">
 
-    <h2>Login / Register</h2>
+  <h2>Login</h2>
 
-    <input
-      type="email"
-      id="email"
-      placeholder="Email address"
-    >
+  <input type="email" id="loginEmail" placeholder="Email">
 
-    <input
-      type="password"
-      id="password"
-      placeholder="Password"
-    >
+  <input type="password" id="loginPassword" placeholder="Password">
 
-    <button onclick="registerUser()">
-      Create Account
-    </button>
+  <button type="button" onclick="login()">
+    Login
+  </button>
 
-    <button onclick="login()">Login</button>
-      
+  <p id="loginMessage"></p>
 
-    <p id="authMessage" class="message"></p>
+  <h2>Create Account</h2>
 
-  </div>
+  <input type="email" id="registerEmail" placeholder="Email">
+
+  <input type="password" id="registerPassword" placeholder="Password">
+
+  <button type="button" onclick="register()">
+    Create Account
+  </button>
+
+  <p id="registerMessage"></p>
+
+</div>
 
 
   <!-- DASHBOARD -->
