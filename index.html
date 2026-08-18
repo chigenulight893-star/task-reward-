@@ -9,280 +9,74 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
-
     body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
       background: #f4f7f9;
-      color: #222;
     }
 
-    header {
-      background: #0b7a4b;
-      color: white;
-      padding: 22px;
-      text-align: center;
-    }
-
-    .container {
-      max-width: 900px;
+    .box {
+      max-width: 400px;
       margin: auto;
-      padding: 20px;
-    }
-
-    .card {
       background: white;
       padding: 25px;
       border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
-    }
-
-    h2 {
-      color: #0b7a4b;
-      margin-bottom: 15px;
     }
 
     input {
       width: 100%;
-      padding: 13px;
-      margin: 8px 0 15px;
-      border: 1px solid #ccc;
-      border-radius: 7px;
-      font-size: 15px;
+      padding: 12px;
+      margin: 8px 0;
+      box-sizing: border-box;
     }
 
     button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
       background: #0b7a4b;
       color: white;
       border: none;
-      padding: 12px 18px;
-      border-radius: 7px;
-      cursor: pointer;
-      font-size: 15px;
+      border-radius: 6px;
     }
 
-    button:hover {
-      background: #075c39;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .fee {
-      font-size: 30px;
-      font-weight: bold;
-      color: #0b7a4b;
-      margin: 15px 0;
-    }
-
-    .payment-box {
-      background: #f1f8f5;
-      padding: 18px;
-      border-radius: 10px;
-      line-height: 1.8;
-      margin: 15px 0;
-    }
-
-    .status {
-      padding: 12px;
-      border-radius: 8px;
-      background: #fff3cd;
-      margin-bottom: 15px;
-    }
-
-    .balance {
-      font-size: 32px;
-      font-weight: bold;
-      color: #0b7a4b;
-    }
-
-    .task {
-      background: white;
-      padding: 20px;
-      margin: 15px 0;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
-    }
-
-    .reward {
-      color: #0b7a4b;
-      font-weight: bold;
-      margin: 10px 0;
-    }
-
-    .logout {
-      background: #555;
-      float: right;
-    }
-
-    .error {
-      color: #b00020;
-      margin-top: 10px;
+    #message {
+      margin-top: 15px;
     }
   </style>
 </head>
 
 <body>
 
-<header>
-  <h1>TaskReward</h1>
-  <p>Complete available tasks and earn rewards.</p>
-</header>
+<div class="box">
 
-<div class="container">
+  <h2>TaskReward</h2>
 
-  <!-- LOGIN / REGISTER -->
-  <div id="authSection" class="card">
+  <input
+    type="email"
+    id="email"
+    placeholder="Email"
+  >
 
-    <h2>Account</h2>
+  <input
+    type="password"
+    id="password"
+    placeholder="Password"
+  >
 
-    <input
-      type="email"
-      id="email"
-      placeholder="Email address"
-    >
+  <button onclick="registerUser()">
+    Create Account
+  </button>
 
-    <input
-      type="password"
-      id="password"
-      placeholder="Password"
-    >
-
-    <button onclick="registerUser()">
-  Create Account
-    </button>
-
-    <button onclick="loginUser()">
-      Login
-    </button>
-
-    <p id="authMessage" class="error"></p>
-
-  </div>
-
-
-  <!-- DASHBOARD -->
-  <div id="dashboard" class="hidden">
-
-    <button class="logout" onclick="logoutUser()">
-      Logout
-    </button>
-
-    <div class="card">
-
-      <h2>💰 Your Balance</h2>
-
-      <div class="balance">
-        ₦<span id="balance">0.00</span>
-      </div>
-
-    </div>
-
-
-    <!-- ACTIVATION -->
-    <div id="activationSection" class="card">
-
-      <h2>🔐 Activate Account</h2>
-
-      <div id="activationStatus" class="status">
-        Your account is not activated.
-      </div>
-
-      <p>
-        Activation fee:
-      </p>
-
-      <div class="fee">
-        ₦1,000
-      </div>
-
-      <div class="payment-box">
-
-        <strong>Payment Details</strong><br>
-
-        Bank: PalmPay<br>
-
-        Account Name: Light Chigenu<br>
-
-        Account Number: 9137539601
-
-      </div>
-
-      <p>
-        After making the payment, submit your activation request.
-        Your payment must be verified before the account is activated.
-      </p>
-
-      <br>
-
-      <button onclick="requestActivation()">
-        I've Made the Payment
-      </button>
-
-    </div>
-
-
-    <!-- TASKS -->
-    <div id="tasksSection" class="hidden">
-
-      <h2>Available Tasks</h2>
-
-      <div id="tasksContainer"></div>
-
-    </div>
-
-
-    <!-- WITHDRAW -->
-    <div id="withdrawSection" class="hidden card">
-
-      <h2>🏦 Withdraw</h2>
-
-      <input
-        type="text"
-        id="accountName"
-        placeholder="Account name"
-      >
-
-      <input
-        type="text"
-        id="accountNumber"
-        placeholder="10-digit account number"
-        maxlength="10"
-      >
-
-      <input
-        type="text"
-        id="bankName"
-        placeholder="Bank name"
-      >
-
-      <input
-        type="number"
-        id="withdrawAmount"
-        placeholder="Amount in ₦"
-      >
-
-      <button onclick="requestWithdrawal()">
-        Request Withdrawal
-      </button>
-
-    </div>
-
-  </div>
+  <p id="message"></p>
 
 </div>
-
 
 <script>
 
 const SUPABASE_URL =
-"ztvliwkztcxmdoidowxn";
+"https://ztvliwkztcxmdoidowxn.supabase.co";
+
 const SUPABASE_KEY =
 "sb_publishable_QrM6y6lTW4M63DaGzO28_g_NeePqlwb";
 
@@ -293,69 +87,7 @@ supabase.createClient(
 );
 
 
-let currentUser = null;
-let currentProfile = null;
-
-
-/* =========================
-   REGISTER
-========================= */
-
-):
-  async function registerUser() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-
-  if (!email || !password) {
-    showMessage("Please enter your email and password.");
-    return;
-  }
-
-  if (password.length < 6) {
-    showMessage("Password must be at least 6 characters.");
-    return;
-  }
-
-  const { data, error } = await supabaseClient.auth.signUp({
-    email: email,
-    password: password
-  });
-
-  if (error) {
-    showMessage(error.message);
-    return;
-  }
-
-  if (!data.user) {
-    showMessage("Account created. Check your email to confirm your account.");
-    return;
-  }
-
-  const { error: profileError } = await supabaseClient
-    .from("profiles")
-    .insert({
-      id: data.user.id,
-      email: email,
-      is_admin: false,
-      is_activated: false,
-      balance: 0
-    });
-
-  if (profileError) {
-    showMessage(profileError.message);
-    return;
-  }
-
-  showMessage("Account created successfully!");
-}
-}
-
-
-/* =========================
-   LOGIN
-========================= */
-
-async function loginUser() {
+async function registerUser() {
 
   const email =
     document.getElementById("email").value.trim();
@@ -363,428 +95,48 @@ async function loginUser() {
   const password =
     document.getElementById("password").value;
 
+  const message =
+    document.getElementById("message");
+
+
+  if (!email || !password) {
+
+    message.innerText =
+      "Please enter your email and password.";
+
+    return;
+  }
+
+
+  message.innerText =
+    "Creating account...";
+
+
   const { data, error } =
-    await supabaseClient.auth.signInWithPassword({
+    await supabaseClient.auth.signUp({
+
       email: email,
+
       password: password
-    });
-
-  if (error) {
-
-    showMessage(error.message);
-
-    return;
-  }
-
-  currentUser = data.user;
-
-  await loadDashboard();
-}
-
-
-/* =========================
-   DASHBOARD
-========================= */
-
-async function loadDashboard() {
-
-  document
-    .getElementById("authSection")
-    .classList.add("hidden");
-
-  document
-    .getElementById("dashboard")
-    .classList.remove("hidden");
-
-
-  const { data, error } =
-    await supabaseClient
-    .from("profiles")
-    .select("*")
-    .eq("id", currentUser.id)
-    .single();
-
-
-  if (error) {
-
-    alert(error.message);
-
-    return;
-  }
-
-
-  currentProfile = data;
-
-
-  document.getElementById("balance")
-    .innerText =
-    Number(data.balance || 0).toFixed(2);
-
-
-  if (data.is_activated) {
-
-    document
-      .getElementById("activationSection")
-      .classList.add("hidden");
-
-    document
-      .getElementById("tasksSection")
-      .classList.remove("hidden");
-
-    document
-      .getElementById("withdrawSection")
-      .classList.remove("hidden");
-
-    loadTasks();
-
-  } else {
-
-    checkActivationRequest();
-
-  }
-
-}
-
-
-/* =========================
-   ACTIVATION REQUEST
-========================= */
-
-async function requestActivation() {
-
-  const { data: existing } =
-    await supabaseClient
-    .from("activation_requests")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .eq("status", "pending");
-
-
-  if (existing && existing.length > 0) {
-
-    document
-      .getElementById("activationStatus")
-      .innerText =
-      "⏳ Your activation request is already pending.";
-
-    return;
-  }
-
-
-  const { error } =
-    await supabaseClient
-    .from("activation_requests")
-    .insert({
-      user_id: currentUser.id,
-      amount: 1000,
-      status: "pending"
-    });
-
-
-  if (error) {
-
-    alert(error.message);
-
-    return;
-  }
-
-
-  document
-    .getElementById("activationStatus")
-    .innerText =
-    "⏳ Activation request submitted. Waiting for admin verification.";
-
-}
-
-
-/* =========================
-   CHECK ACTIVATION
-========================= */
-
-async function checkActivationRequest() {
-
-  const { data } =
-    await supabaseClient
-    .from("activation_requests")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .order("created_at", {
-      ascending: false
-    })
-    .limit(1);
-
-
-  if (!data || data.length === 0) {
-
-    return;
-  }
-
-
-  if (data[0].status === "pending") {
-
-    document
-      .getElementById("activationStatus")
-      .innerText =
-      "⏳ Your activation request is waiting for admin verification.";
-
-  }
-
-}
-
-
-/* =========================
-   LOAD TASKS
-========================= */
-
-async function loadTasks() {
-
-  const { data, error } =
-    await supabaseClient
-    .from("tasks")
-    .select("*")
-    .eq("active", true);
-
-
-  if (error) {
-
-    alert(error.message);
-
-    return;
-  }
-
-
-  const container =
-    document.getElementById("tasksContainer");
-
-  container.innerHTML = "";
-
-
-  if (!data || data.length === 0) {
-
-    container.innerHTML =
-      "<p>No tasks are currently available.</p>";
-
-    return;
-  }
-
-
-  data.forEach(task => {
-
-    const div =
-      document.createElement("div");
-
-    div.className = "task";
-
-    div.innerHTML = `
-      <h3>${escapeHtml(task.title)}</h3>
-
-      <p>${escapeHtml(task.description || "")}</p>
-
-      <div class="reward">
-        Reward: ₦${Number(task.reward).toFixed(2)}
-      </div>
-
-      <button onclick="submitTask(${task.id})">
-        Submit Task
-      </button>
-    `;
-
-    container.appendChild(div);
-
-  });
-
-}
-
-
-/* =========================
-   SUBMIT TASK
-========================= */
-
-async function submitTask(taskId) {
-
-  const proof =
-    prompt(
-      "Enter your task proof or details:"
-    );
-
-  if (!proof) return;
-
-
-  const { error } =
-    await supabaseClient
-    .from("task_submissions")
-    .insert({
-      task_id: taskId,
-      user_id: currentUser.id,
-      proof: proof,
-      status: "pending"
-    });
-
-
-  if (error) {
-
-    alert(error.message);
-
-    return;
-  }
-
-
-  alert(
-    "Task submitted. Waiting for admin review."
-  );
-
-}
-
-
-/* =========================
-   WITHDRAW
-========================= */
-
-async function requestWithdrawal() {
-
-  const amount =
-    Number(
-      document.getElementById("withdrawAmount").value
-    );
-
-  const accountName =
-    document.getElementById("accountName").value.trim();
-
-  const accountNumber =
-    document.getElementById("accountNumber").value.trim();
-
-  const bankName =
-    document.getElementById("bankName").value.trim();
-
-
-  if (!amount || !accountName ||
-      !accountNumber || !bankName) {
-
-    alert(
-      "Please complete all withdrawal details."
-    );
-
-    return;
-  }
-
-
-  if (amount < 1000) {
-
-    alert(
-      "Minimum withdrawal is ₦1,000."
-    );
-
-    return;
-  }
-
-
-  if (amount > Number(currentProfile.balance)) {
-
-    alert(
-      "Insufficient balance."
-    );
-
-    return;
-  }
-
-
-  const { error } =
-    await supabaseClient
-    .from("withdrawals")
-    .insert({
-
-      user_id: currentUser.id,
-
-      amount: amount,
-
-      account_name: accountName,
-
-      account_number: accountNumber,
-
-      bank_name: bankName,
-
-      status: "pending"
 
     });
 
 
   if (error) {
 
-    alert(error.message);
+    message.innerText =
+      "Error: " + error.message;
 
     return;
   }
 
 
-  alert(
-    "Withdrawal request submitted."
-  );
+  message.innerText =
+    "Account created! Check your email if confirmation is required.";
 
 }
-
-
-/* =========================
-   LOGOUT
-========================= */
-
-async function logoutUser() {
-
-  await supabaseClient.auth.signOut();
-
-  location.reload();
-
-}
-
-
-/* =========================
-   HELPERS
-========================= */
-
-function showMessage(message) {
-
-  document
-    .getElementById("authMessage")
-    .innerText = message;
-
-}
-
-
-function escapeHtml(text) {
-
-  const div =
-    document.createElement("div");
-
-  div.textContent = text;
-
-  return div.innerHTML;
-
-}
-
-
-/* =========================
-   CHECK EXISTING SESSION
-========================= */
-
-async function checkSession() {
-
-  const { data } =
-    await supabaseClient.auth.getSession();
-
-  if (data.session) {
-
-    currentUser =
-      data.session.user;
-
-    await loadDashboard();
-
-  }
-
-}
-
-
-checkSession();
 
 </script>
 
 </body>
-  </html>
+</html>
