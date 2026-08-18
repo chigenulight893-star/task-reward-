@@ -201,16 +201,6 @@
       </button>
 
     </div>
-    
-    <div id="tasksBox" class="card hidden">
-
-  <h2>💰 Available Tasks</h2>
-
-  <div id="tasksList">
-    Loading tasks...
-  </div>
-
-</div>
 
 
     <!-- ACTIVATED MESSAGE -->
@@ -366,17 +356,13 @@ async function loginUser() {
 
 async function loadProfile() {
 
-  if (profile.is_activated) {
-
   document
-    .getElementById("activationBox")
+    .getElementById("authBox")
     .classList.add("hidden");
 
   document
-    .getElementById("activatedBox")
+    .getElementById("dashboard")
     .classList.remove("hidden");
-
-  }
 
 
   let { data: profile, error } =
@@ -590,72 +576,6 @@ async function checkSession() {
 
 
 checkSession();
-
-
-async function loadTasks() {
-
-  const tasksList =
-    document.getElementById("tasksList");
-
-  const { data, error } =
-    await supabaseClient
-      .from("tasks")
-      .select("*")
-      .eq("active", true)
-      .order("created_at", {
-        ascending: false
-      });
-
-  if (error) {
-    tasksList.innerHTML =
-      "Unable to load tasks.";
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    tasksList.innerHTML =
-      "No tasks are available right now.";
-    return;
-  }
-
-  tasksList.innerHTML = "";
-
-  data.forEach(task => {
-
-    const taskDiv =
-      document.createElement("div");
-
-    taskDiv.className = "card";
-
-    taskDiv.innerHTML = `
-      <h3>${task.title}</h3>
-      <p>${task.description}</p>
-
-      <p>
-        <strong>
-          Reward: ₦${Number(task.reward).toFixed(2)}
-        </strong>
-      </p>
-
-      <button onclick="startTask(${task.id})">
-        Start Task
-      </button>
-    `;
-
-    tasksList.appendChild(taskDiv);
-
-  });
-}
-
-
-function startTask(taskId) {
-
-  alert(
-    "Task selected. Task ID: " + taskId
-  );
-
-}
-
 
 </script>
 
