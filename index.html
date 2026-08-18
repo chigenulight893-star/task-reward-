@@ -17,6 +17,7 @@
     body {
       margin: 0;
       background: #f4f7f9;
+      color: #222;
     }
 
     header {
@@ -57,6 +58,7 @@
       background: #0b7a4b;
       color: white;
       font-size: 15px;
+      cursor: pointer;
     }
 
     .logout {
@@ -97,6 +99,18 @@
     .message {
       margin-top: 15px;
     }
+
+    .task {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+
+    .reward {
+      color: #0b7a4b;
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -111,33 +125,51 @@
 
   <!-- AUTH -->
 
-  <div class="card">
+  <div id="authBox" class="card">
 
-  <h2>Login</h2>
+    <h2>Login</h2>
 
-  <input type="email" id="loginEmail" placeholder="Email">
+    <input
+      type="email"
+      id="loginEmail"
+      placeholder="Email"
+    >
 
-  <input type="password" id="loginPassword" placeholder="Password">
+    <input
+      type="password"
+      id="loginPassword"
+      placeholder="Password"
+    >
 
-  <button type="button" onclick="login()">
-    Login
-  </button>
+    <button type="button" onclick="login()">
+      Login
+    </button>
 
-  <p id="loginMessage"></p>
+    <p id="loginMessage" class="message"></p>
 
-  <h2>Create Account</h2>
+    <hr>
 
-  <input type="email" id="registerEmail" placeholder="Email">
+    <h2>Create Account</h2>
 
-  <input type="password" id="registerPassword" placeholder="Password">
+    <input
+      type="email"
+      id="registerEmail"
+      placeholder="Email"
+    >
 
-  <button type="button" onclick="register()">
-    Create Account
-  </button>
+    <input
+      type="password"
+      id="registerPassword"
+      placeholder="Password"
+    >
 
-  <p id="registerMessage"></p>
+    <button type="button" onclick="register()">
+      Create Account
+    </button>
 
-</div>
+    <p id="registerMessage" class="message"></p>
+
+  </div>
 
 
   <!-- DASHBOARD -->
@@ -146,7 +178,9 @@
 
     <div class="card">
 
-      <button class="logout" onclick="logoutUser()">
+      <button
+        class="logout"
+        onclick="logoutUser()">
         Logout
       </button>
 
@@ -193,7 +227,7 @@
 
       <p>
         After making the payment, submit your activation
-        request. Your payment must be verified by an admin.
+        request. Payment must be verified by an admin.
       </p>
 
       <button onclick="requestActivation()">
@@ -203,16 +237,29 @@
     </div>
 
 
-    <!-- ACTIVATED MESSAGE -->
+    <!-- ACTIVATED -->
 
     <div id="activatedBox" class="card hidden">
 
       <h2>✅ Account Activated</h2>
 
       <p>
-        Your account is active. You can now access available
-        earning tasks.
+        Your account is active. You can now access
+        available earning tasks.
       </p>
+
+    </div>
+
+
+    <!-- TASKS -->
+
+    <div id="tasksBox" class="card hidden">
+
+      <h2>💰 Available Tasks</h2>
+
+      <div id="tasksList">
+        Loading tasks...
+      </div>
 
     </div>
 
@@ -222,6 +269,10 @@
 
 
 <script>
+
+/* =========================
+   SUPABASE
+========================= */
 
 const SUPABASE_URL =
 "https://ztvliwkztcxmdoidowxn.supabase.co";
@@ -243,16 +294,18 @@ let currentUser = null;
    REGISTER
 ========================= */
 
-async function registerUser() {
+async function register() {
 
   const email =
-    document.getElementById("email").value.trim();
+    document.getElementById("registerEmail")
+      .value.trim();
 
   const password =
-    document.getElementById("password").value;
+    document.getElementById("registerPassword")
+      .value;
 
   const message =
-    document.getElementById("authMessage");
+    document.getElementById("registerMessage");
 
 
   if (!email || !password) {
@@ -268,7 +321,7 @@ async function registerUser() {
     "Creating account...";
 
 
-  const { data, error } =
+  const { error } =
     await supabaseClient.auth.signUp({
 
       email: email,
@@ -288,7 +341,7 @@ async function registerUser() {
 
 
   message.innerText =
-    "Account created. Check your email to confirm your account.";
+    "Account created successfully. You can now log in.";
 
 }
 
@@ -296,42 +349,50 @@ async function registerUser() {
 /* =========================
    LOGIN
 ========================= */
+
 async function login() {
 
   const email =
-    document.getElementById("loginEmail").value.trim();
+    document.getElementById("loginEmail")
+      .value.trim();
 
   const password =
-    document.getElementById("loginPassword").value;
+    document.getElementById("loginPassword")
+      .value;
 
   const message =
     document.getElementById("loginMessage");
 
+
   if (!email || !password) {
-    message.innerText = "Enter your email and password.";
+
+    message.innerText =
+      "Enter your email and password.";
+
     return;
   }
 
-  message.innerText = "Logging in...";
+
+  message.innerText =
+    "Logging in...";
+
 
   const { data, error } =
     await supabaseClient.auth.signInWithPassword({
+
       email: email,
+
       password: password
+
     });
 
+
   if (error) {
-    message.innerText = error.message;
+
+    message.innerText =
+      error.message;
+
     return;
-  }
-
-  message.innerText = "Login successful!";
-
-  // Give Supabase a moment to save the session
-  setTimeout(() => {
-    location.reload();
-  }, 500);
-}
   }
 
 
@@ -361,37 +422,37 @@ async function loadProfile() {
 
   let { data: profile, error } =
     await supabaseClient
-    .from("profiles")
-    .select("*")
-    .eq("id", currentUser.id)
-    .single();
+      .from("profiles")
+      .select("*")
+      .eq("id", currentUser.id)
+      .single();
 
+
+  /*
+    If profile doesn't exist,
+    create it.
+  */
 
   if (error) {
 
-    /*
-      If the profile does not exist,
-      create one.
-    */
-
     const result =
       await supabaseClient
-      .from("profiles")
-      .insert({
+        .from("profiles")
+        .insert({
 
-        id: currentUser.id,
+          id: currentUser.id,
 
-        email: currentUser.email,
+          email: currentUser.email,
 
-        is_admin: false,
+          is_admin: false,
 
-        is_activated: false,
+          is_activated: false,
 
-        balance: 0
+          balance: 0
 
-      })
-      .select()
-      .single();
+        })
+        .select()
+        .single();
 
 
     if (result.error) {
@@ -407,12 +468,15 @@ async function loadProfile() {
 
     profile =
       result.data;
+
   }
 
 
-  document.getElementById("balance")
+  document
+    .getElementById("balance")
     .innerText =
-    Number(profile.balance || 0).toFixed(2);
+      Number(profile.balance || 0)
+        .toFixed(2);
 
 
   if (profile.is_activated) {
@@ -424,6 +488,12 @@ async function loadProfile() {
     document
       .getElementById("activatedBox")
       .classList.remove("hidden");
+
+    document
+      .getElementById("tasksBox")
+      .classList.remove("hidden");
+
+    loadTasks();
 
   } else {
 
@@ -441,21 +511,23 @@ async function loadProfile() {
 async function requestActivation() {
 
   const status =
-    document.getElementById("activationStatus");
+    document.getElementById(
+      "activationStatus"
+    );
 
 
-  const { data: existing, error: checkError } =
+  const { data: existing, error } =
     await supabaseClient
-    .from("activation_requests")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .eq("status", "pending");
+      .from("activation_requests")
+      .select("*")
+      .eq("user_id", currentUser.id)
+      .eq("status", "pending");
 
 
-  if (checkError) {
+  if (error) {
 
     status.innerText =
-      checkError.message;
+      error.message;
 
     return;
   }
@@ -470,24 +542,24 @@ async function requestActivation() {
   }
 
 
-  const { error } =
+  const { error: insertError } =
     await supabaseClient
-    .from("activation_requests")
-    .insert({
+      .from("activation_requests")
+      .insert({
 
-      user_id: currentUser.id,
+        user_id: currentUser.id,
 
-      amount: 1000,
+        amount: 1000,
 
-      status: "pending"
+        status: "pending"
 
-    });
+      });
 
 
-  if (error) {
+  if (insertError) {
 
     status.innerText =
-      error.message;
+      insertError.message;
 
     return;
   }
@@ -505,15 +577,21 @@ async function requestActivation() {
 
 async function checkActivation() {
 
-  const { data } =
+  const { data, error } =
     await supabaseClient
-    .from("activation_requests")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .order("created_at", {
-      ascending: false
-    })
-    .limit(1);
+      .from("activation_requests")
+      .select("*")
+      .eq("user_id", currentUser.id)
+      .order("created_at", {
+        ascending: false
+      })
+      .limit(1);
+
+
+  if (error) {
+
+    return;
+  }
 
 
   if (!data || data.length === 0) {
@@ -531,6 +609,108 @@ async function checkActivation() {
 
   }
 
+
+  if (data[0].status === "rejected") {
+
+    document
+      .getElementById("activationStatus")
+      .innerText =
+      "❌ Your activation request was rejected. Please check your payment details and submit again.";
+
+  }
+
+}
+
+
+/* =========================
+   LOAD TASKS
+========================= */
+
+async function loadTasks() {
+
+  const tasksList =
+    document.getElementById("tasksList");
+
+
+  const { data, error } =
+    await supabaseClient
+      .from("tasks")
+      .select("*")
+      .eq("active", true)
+      .order("created_at", {
+        ascending: false
+      });
+
+
+  if (error) {
+
+    tasksList.innerText =
+      "Unable to load tasks.";
+
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    tasksList.innerText =
+      "No tasks are available right now.";
+
+    return;
+  }
+
+
+  tasksList.innerHTML = "";
+
+
+  data.forEach(task => {
+
+    const taskDiv =
+      document.createElement("div");
+
+    taskDiv.className =
+      "task";
+
+
+    taskDiv.innerHTML = `
+
+      <h3>${escapeHtml(task.title)}</h3>
+
+      <p>
+        ${escapeHtml(task.description)}
+      </p>
+
+      <p class="reward">
+        Reward:
+        ₦${Number(task.reward).toFixed(2)}
+      </p>
+
+      <button
+        onclick="startTask('${task.id}')">
+        Start Task
+      </button>
+
+    `;
+
+
+    tasksList.appendChild(taskDiv);
+
+  });
+
+}
+
+
+/* =========================
+   TEMPORARY TASK BUTTON
+========================= */
+
+function startTask(taskId) {
+
+  alert(
+    "Task selected. Task ID: " +
+    taskId
+  );
+
 }
 
 
@@ -542,13 +722,15 @@ async function logoutUser() {
 
   await supabaseClient.auth.signOut();
 
+  currentUser = null;
+
   location.reload();
 
 }
 
 
 /* =========================
-   SESSION
+   SESSION CHECK
 ========================= */
 
 async function checkSession() {
@@ -557,7 +739,7 @@ async function checkSession() {
     await supabaseClient.auth.getSession();
 
 
-  if (data.session) {
+  if (data && data.session) {
 
     currentUser =
       data.session.user;
@@ -568,6 +750,25 @@ async function checkSession() {
 
 }
 
+
+/* =========================
+   SECURITY HELPER
+========================= */
+
+function escapeHtml(text) {
+
+  const div =
+    document.createElement("div");
+
+  div.textContent =
+    String(text);
+
+  return div.innerHTML;
+
+}
+
+
+/* START */
 
 checkSession();
 
