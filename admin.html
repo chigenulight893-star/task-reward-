@@ -1,1 +1,1788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>TaskReward Admin</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f4f7f6;
+      color: #17201d;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #087f5b;
+      color: white;
+      padding: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 23px;
+    }
+
+    header p {
+      margin-top: 5px;
+      opacity: .9;
+      font-size: 14px;
+    }
+
+    .content {
+      padding: 18px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e3e8e6;
+      border-radius: 15px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+
+    .login {
+      max-width: 450px;
+      margin: 70px auto;
+      padding: 20px;
+    }
+
+    .login h1 {
+      color: #087f5b;
+      margin-bottom: 8px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border: 1px solid #ccd5d1;
+      border-radius: 9px;
+      outline: none;
+      font-size: 15px;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    button {
+      border: none;
+      padding: 12px 15px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .primary {
+      background: #087f5b;
+      color: white;
+    }
+
+    .danger {
+      background: #ffe5e5;
+      color: #b42318;
+    }
+
+    .warning {
+      background: #fff1c9;
+      color: #806000;
+    }
+
+    .dark {
+      background: #17201d;
+      color: white;
+    }
+
+    .secondary {
+      background: #e9f8f2;
+      color: #087f5b;
+    }
+
+    .full {
+      width: 100%;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .error {
+      color: #b42318;
+      margin-top: 10px;
+    }
+
+    .success {
+      color: #087f5b;
+      margin-top: 10px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: white;
+      border: 1px solid #e3e8e6;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .stat small {
+      color: #66736e;
+    }
+
+    .stat h2 {
+      margin-top: 8px;
+      color: #087f5b;
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      margin-bottom: 18px;
+      padding-bottom: 4px;
+    }
+
+    .nav button {
+      white-space: nowrap;
+      margin: 0;
+      background: white;
+      border: 1px solid #dce3df;
+    }
+
+    .nav button.active {
+      background: #087f5b;
+      color: white;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .row {
+      border: 1px solid #e1e6e4;
+      border-radius: 12px;
+      padding: 15px;
+      margin-top: 12px;
+    }
+
+    .row h4 {
+      margin-bottom: 6px;
+    }
+
+    .muted {
+      color: #66736e;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .actions button {
+      margin-top: 8px;
+    }
+
+    .checkbox {
+      width: auto;
+      margin-right: 8px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .pending {
+      background: #fff1c9;
+      color: #806000;
+    }
+
+    .approved {
+      background: #d9f7eb;
+      color: #087f5b;
+    }
+
+    .rejected {
+      background: #ffe5e5;
+      color: #b42318;
+    }
+
+    @media (max-width: 750px) {
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .content {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ADMIN LOGIN -->
+
+<div id="loginPage" class="login">
+
+  <div class="card">
+
+    <h1>TaskReward Admin</h1>
+
+    <p class="muted">
+      Sign in with your administrator account.
+    </p>
+
+    <label>Email</label>
+    <input
+      id="adminEmail"
+      type="email"
+      placeholder="Admin email"
+    >
+
+    <label>Password</label>
+    <input
+      id="adminPassword"
+      type="password"
+      placeholder="Password"
+    >
+
+    <button
+      class="primary full"
+      onclick="adminLogin()"
+    >
+      Login
+    </button>
+
+    <div id="loginMessage"></div>
+
+  </div>
+
+</div>
+
+
+<!-- ADMIN APP -->
+
+<div id="adminApp" class="container hidden">
+
+  <header>
+
+    <h1>TaskReward Admin</h1>
+
+    <p>
+      Administrator Dashboard
+    </p>
+
+  </header>
+
+  <div class="content">
+
+    <!-- NAVIGATION -->
+
+    <div class="nav">
+
+      <button
+        class="active"
+        onclick="showSection('overview', this)"
+      >
+        📊 Overview
+      </button>
+
+      <button
+        onclick="showSection('tasks', this)"
+      >
+        📋 Tasks
+      </button>
+
+      <button
+        onclick="showSection('approvals', this)"
+      >
+        ✅ Approvals
+      </button>
+
+      <button
+        onclick="showSection('users', this)"
+      >
+        👥 Users
+      </button>
+
+      <button
+        onclick="showSection('deposits', this)"
+      >
+        💳 Deposits
+      </button>
+
+      <button
+        onclick="showSection('withdrawals', this)"
+      >
+        💸 Withdrawals
+      </button>
+
+      <button
+        onclick="showSection('settings', this)"
+      >
+        ⚙️ Settings
+      </button>
+
+      <button
+        class="danger"
+        onclick="adminLogout()"
+      >
+        🚪 Logout
+      </button>
+
+    </div>
+
+
+    <!-- OVERVIEW -->
+
+    <section
+      id="overview"
+      class="section active"
+    >
+
+      <div class="stats">
+
+        <div class="stat">
+          <small>Total Users</small>
+          <h2 id="totalUsers">0</h2>
+        </div>
+
+        <div class="stat">
+          <small>Activated Users</small>
+          <h2 id="activatedUsers">0</h2>
+        </div>
+
+        <div class="stat">
+          <small>Pending Tasks</small>
+          <h2 id="pendingTasks">0</h2>
+        </div>
+
+        <div class="stat">
+          <small>Total Balance</small>
+          <h2>₦<span id="totalBalance">0.00</span></h2>
+        </div>
+
+      </div>
+
+      <div class="card">
+
+        <h3>Welcome, Administrator</h3>
+
+        <p class="muted">
+          Use the menu above to manage users, tasks,
+          deposits, withdrawals and task submissions.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- TASK MANAGEMENT -->
+
+    <section
+      id="tasks"
+      class="section"
+    >
+
+      <div class="card">
+
+        <h3>➕ Create Task</h3>
+
+        <label>Task Title</label>
+
+        <input
+          id="taskTitle"
+          type="text"
+          placeholder="Task title"
+        >
+
+        <label>Description</label>
+
+        <textarea
+          id="taskDescription"
+          placeholder="Task description"
+        ></textarea>
+
+        <label>Reward</label>
+
+        <input
+          id="taskReward"
+          type="number"
+          placeholder="100"
+        >
+
+        <button
+          class="primary"
+          onclick="createTask()"
+        >
+          Create Task
+        </button>
+
+        <div id="taskMessage"></div>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>📋 Existing Tasks</h3>
+
+        <div id="adminTaskList">
+          Loading tasks...
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- APPROVALS -->
+
+    <section
+      id="approvals"
+      class="section"
+    >
+
+      <div class="card">
+
+        <h3>✅ Task Approvals</h3>
+
+        <p class="muted">
+          Select pending submissions for bulk processing,
+          or approve/reject them individually.
+        </p>
+
+        <div class="actions">
+
+          <button
+            class="secondary"
+            onclick="selectAllPending()"
+          >
+            Select All
+          </button>
+
+          <button
+            class="primary"
+            onclick="bulkApprove()"
+          >
+            Approve Selected
+          </button>
+
+          <button
+            class="danger"
+            onclick="bulkReject()"
+          >
+            Reject Selected
+          </button>
+
+        </div>
+
+        <div id="approvalMessage"></div>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>Pending Submissions</h3>
+
+        <div id="approvalList">
+          Loading...
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- USERS -->
+
+    <section
+      id="users"
+      class="section"
+    >
+
+      <div class="card">
+
+        <h3>👥 Users</h3>
+
+        <input
+          id="userSearch"
+          type="text"
+          placeholder="Search by name or email"
+          oninput="filterUsers()"
+        >
+
+        <div id="userList">
+          Loading users...
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- DEPOSITS -->
+
+    <section
+      id="deposits"
+      class="section"
+    >
+
+      <div class="card">
+
+        <h3>💳 Deposits</h3>
+
+        <div id="depositList">
+          Loading deposits...
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- WITHDRAWALS -->
+
+    <section
+      id="withdrawals"
+      class="section"
+    >
+
+      <div class="card">
+
+        <h3>💸 Withdrawals</h3>
+
+        <div id="withdrawalList">
+          Loading withdrawals...
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- SETTINGS -->
+
+    <section
+      id="settings"
+      class="section"
+    >
+
+      <div class="card">
+
+        <h3>⚙️ Payment Settings</h3>
+
+        <label>Bank Name</label>
+
+        <input
+          id="settingsBank"
+          type="text"
+          placeholder="Bank name"
+        >
+
+        <label>Account Name</label>
+
+        <input
+          id="settingsName"
+          type="text"
+          placeholder="Account name"
+        >
+
+        <label>Account Number</label>
+
+        <input
+          id="settingsNumber"
+          type="text"
+          placeholder="Account number"
+        >
+
+        <button
+          class="primary"
+          onclick="saveSettings()"
+        >
+          Save Payment Settings
+        </button>
+
+        <div id="settingsMessage"></div>
+
+      </div>
+
+    </section>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* ===========================
+   SUPABASE
+=========================== */
+
+const SUPABASE_URL =
+"https://ztvliwkztcxmdoidowxn.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_QrM6y6lTW4M63DaGzO28_g_NeePqlwb";
+
+const supabaseClient =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+let adminUser = null;
+let allUsers = [];
+let selectedApprovals = new Set();
+
+
+/* ===========================
+   LOGIN
+=========================== */
+
+async function adminLogin() {
+
+  const email =
+    document.getElementById("adminEmail")
+      .value.trim();
+
+  const password =
+    document.getElementById("adminPassword")
+      .value;
+
+  const message =
+    document.getElementById("loginMessage");
+
+  message.innerHTML = "";
+
+  if (!email || !password) {
+
+    message.innerHTML =
+      '<p class="error">Enter email and password.</p>';
+
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+  if (error) {
+
+    message.innerHTML =
+      `<p class="error">${escapeHTML(error.message)}</p>`;
+
+    return;
+  }
+
+  const user = data.user;
+
+  const { data: profile, error: profileError } =
+    await supabaseClient
+      .from("profiles")
+      .select("id,is_admin,full_name")
+      .eq("id", user.id)
+      .single();
+
+  if (profileError || !profile || profile.is_admin !== true) {
+
+    await supabaseClient.auth.signOut();
+
+    message.innerHTML =
+      '<p class="error">This account is not an administrator.</p>';
+
+    return;
+  }
+
+  adminUser = user;
+
+  document
+    .getElementById("loginPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("adminApp")
+    .classList.remove("hidden");
+
+  loadEverything();
+}
+
+
+/* ===========================
+   SESSION CHECK
+=========================== */
+
+async function checkAdminSession() {
+
+  const { data } =
+    await supabaseClient.auth.getSession();
+
+  if (!data.session)
+    return;
+
+  const user =
+    data.session.user;
+
+  const { data: profile } =
+    await supabaseClient
+      .from("profiles")
+      .select("id,is_admin,full_name")
+      .eq("id", user.id)
+      .single();
+
+  if (!profile || profile.is_admin !== true) {
+
+    await supabaseClient.auth.signOut();
+
+    return;
+  }
+
+  adminUser = user;
+
+  document
+    .getElementById("loginPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("adminApp")
+    .classList.remove("hidden");
+
+  loadEverything();
+}
+
+
+/* ===========================
+   LOAD EVERYTHING
+=========================== */
+
+async function loadEverything() {
+
+  await loadOverview();
+  await loadTasks();
+  await loadApprovals();
+  await loadUsers();
+  await loadDeposits();
+  await loadWithdrawals();
+  await loadSettings();
+
+}
+
+
+/* ===========================
+   OVERVIEW
+=========================== */
+
+async function loadOverview() {
+
+  const { data: users } =
+    await supabaseClient
+      .from("profiles")
+      .select("balance,is_activated");
+
+  if (!users)
+    return;
+
+  document.getElementById("totalUsers")
+    .textContent = users.length;
+
+  document.getElementById("activatedUsers")
+    .textContent =
+      users.filter(
+        user => user.is_activated === true
+      ).length;
+
+  const balance =
+    users.reduce(
+      (total, user) =>
+        total + Number(user.balance || 0),
+      0
+    );
+
+  document.getElementById("totalBalance")
+    .textContent =
+      balance.toLocaleString(
+        "en-NG",
+        {
+          minimumFractionDigits: 2
+        }
+      );
+
+  const { data: pending } =
+    await supabaseClient
+      .from("task_completions")
+      .select("id")
+      .eq("status", "pending");
+
+  document.getElementById("pendingTasks")
+    .textContent =
+      pending ? pending.length : 0;
+}
+
+
+/* ===========================
+   TASKS
+=========================== */
+
+async function loadTasks() {
+
+  const { data, error } =
+    await supabaseClient
+      .from("tasks")
+      .select("*")
+      .order("id", {
+        ascending: false
+      });
+
+  const list =
+    document.getElementById("adminTaskList");
+
+  if (error) {
+
+    list.innerHTML =
+      `<p class="error">${escapeHTML(error.message)}</p>`;
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+
+    list.innerHTML =
+      "<p>No tasks created.</p>";
+
+    return;
+  }
+
+  list.innerHTML = "";
+
+  data.forEach(task => {
+
+    const row =
+      document.createElement("div");
+
+    row.className = "row";
+
+    row.innerHTML = `
+      <h4>${escapeHTML(task.title)}</h4>
+
+      <p class="muted">
+        ${escapeHTML(task.description || "")}
+      </p>
+
+      <p class="muted">
+        Reward:
+        <strong>₦${Number(task.reward || 0).toLocaleString()}</strong>
+      </p>
+
+      <p class="muted">
+        Active:
+        <strong>${task.active ? "Yes" : "No"}</strong>
+      </p>
+
+      <div class="actions">
+
+        <button
+          class="${task.active ? "warning" : "primary"}"
+          onclick="toggleTask(${task.id}, ${task.active})"
+        >
+          ${task.active ? "Deactivate" : "Activate"}
+        </button>
+
+      </div>
+    `;
+
+    list.appendChild(row);
+  });
+}
+
+
+async function createTask() {
+
+  const title =
+    document.getElementById("taskTitle")
+      .value.trim();
+
+  const description =
+    document.getElementById("taskDescription")
+      .value.trim();
+
+  const reward =
+    Number(
+      document.getElementById("taskReward").value
+    );
+
+  const message =
+    document.getElementById("taskMessage");
+
+  if (!title || !description || !reward || reward <= 0) {
+
+    message.innerHTML =
+      '<p class="error">Fill all task fields correctly.</p>';
+
+    return;
+  }
+
+  const { error } =
+    await supabaseClient
+      .from("tasks")
+      .insert({
+        title,
+        description,
+        reward,
+        active: true,
+        status: "active"
+      });
+
+  if (error) {
+
+    message.innerHTML =
+      `<p class="error">${escapeHTML(error.message)}</p>`;
+
+    return;
+  }
+
+  document.getElementById("taskTitle").value = "";
+  document.getElementById("taskDescription").value = "";
+  document.getElementById("taskReward").value = "";
+
+  message.innerHTML =
+    '<p class="success">Task created successfully.</p>';
+
+  loadTasks();
+}
+
+
+async function toggleTask(id, currentState) {
+
+  const { error } =
+    await supabaseClient
+      .from("tasks")
+      .update({
+        active: !currentState,
+        status: !currentState
+          ? "active"
+          : "inactive"
+      })
+      .eq("id", id);
+
+  if (error) {
+
+    alert(error.message);
+
+    return;
+  }
+
+  loadTasks();
+}
+
+
+/* ===========================
+   APPROVALS
+=========================== */
+
+async function loadApprovals() {
+
+  const list =
+    document.getElementById("approvalList");
+
+  const { data, error } =
+    await supabaseClient
+      .from("task_completions")
+      .select(`
+        id,
+        user_id,
+        task_id,
+        status,
+        reward,
+        created_at,
+        profiles (
+          full_name
+        ),
+        tasks (
+          title
+        )
+      `)
+      .eq("status", "pending")
+      .order("created_at", {
+        ascending: false
+      });
+
+  if (error) {
+
+    list.innerHTML =
+      `<p class="error">${escapeHTML(error.message)}</p>`;
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+
+    list.innerHTML =
+      "<p>No pending task submissions.</p>";
+
+    return;
+  }
+
+  list.innerHTML = "";
+
+  data.forEach(item => {
+
+    const row =
+      document.createElement("div");
+
+    row.className = "row";
+
+    const name =
+      item.profiles?.full_name || "Unknown user";
+
+    const task =
+      item.tasks?.title || "Unknown task";
+
+    row.innerHTML = `
+      <label style="margin-top:0">
+
+        <input
+          type="checkbox"
+          class="checkbox approvalCheck"
+          value="${item.id}"
+        >
+
+        Select this submission
+
+      </label>
+
+      <h4>${escapeHTML(task)}</h4>
+
+      <p class="muted">
+        User: ${escapeHTML(name)}
+      </p>
+
+      <p class="muted">
+        Reward:
+        <strong>₦${Number(item.reward || 0).toLocaleString()}</strong>
+      </p>
+
+      <p class="muted">
+        Submitted:
+        ${new Date(item.created_at).toLocaleString()}
+      </p>
+
+      <div class="actions">
+
+        <button
+          class="primary"
+          onclick="manualApprove('${item.id}')"
+        >
+          Approve
+        </button>
+
+        <button
+          class="danger"
+          onclick="manualReject('${item.id}')"
+        >
+          Reject
+        </button>
+
+      </div>
+    `;
+
+    list.appendChild(row);
+  });
+}
+
+
+/*
+  IMPORTANT:
+  The functions below currently mark the
+  completion status only.
+
+  We will connect the actual balance-crediting
+  database function after the database function
+  is successfully created and tested.
+*/
+
+async function manualApprove(id) {
+
+  if (!confirm(
+    "Approve this task submission?"
+  ))
+    return;
+
+  const message =
+    document.getElementById("approvalMessage");
+
+  const { error } =
+    await supabaseClient
+      .from("task_completions")
+      .update({
+        status: "approved",
+        approved_at: new Date().toISOString()
+      })
+      .eq("id", id)
+      .eq("status", "pending");
+
+  if (error) {
+
+    message.innerHTML =
+      `<p class="error">${escapeHTML(error.message)}</p>`;
+
+    return;
+  }
+
+  message.innerHTML =
+    '<p class="success">Submission approved.</p>';
+
+  await loadApprovals();
+  await loadOverview();
+}
+
+
+async function manualReject(id) {
+
+  if (!confirm(
+    "Reject this task submission?"
+  ))
+    return;
+
+  const message =
+    document.getElementById("approvalMessage");
+
+  const { error } =
+    await supabaseClient
+      .from("task_completions")
+      .update({
+        status: "rejected"
+      })
+      .eq("id", id)
+      .eq("status", "pending");
+
+  if (error) {
+
+    message.innerHTML =
+      `<p class="error">${escapeHTML(error.message)}</p>`;
+
+    return;
+  }
+
+  message.innerHTML =
+    '<p class="success">Submission rejected.</p>';
+
+  await loadApprovals();
+  await loadOverview();
+}
+
+
+function getSelectedApprovals() {
+
+  return Array
+    .from(
+      document.querySelectorAll(
+        ".approvalCheck:checked"
+      )
+    )
+    .map(
+      checkbox => checkbox.value
+    );
+}
+
+
+function selectAllPending() {
+
+  const boxes =
+    document.querySelectorAll(
+      ".approvalCheck"
+    );
+
+  boxes.forEach(
+    checkbox => {
+      checkbox.checked = true;
+    }
+  );
+}
+
+
+async function bulkApprove() {
+
+  const ids =
+    getSelectedApprovals();
+
+  if (ids.length === 0) {
+
+    alert(
+      "Select at least one pending submission."
+    );
+
+    return;
+  }
+
+  if (!confirm(
+    `Approve ${ids.length} selected submission(s)?`
+  ))
+    return;
+
+  const message =
+    document.getElementById("approvalMessage");
+
+  for (const id of ids) {
+
+    const { error } =
+      await supabaseClient
+        .from("task_completions")
+        .update({
+          status: "approved",
+          approved_at:
+            new Date().toISOString()
+        })
+        .eq("id", id)
+        .eq("status", "pending");
+
+    if (error) {
+
+      message.innerHTML =
+        `<p class="error">${escapeHTML(error.message)}</p>`;
+
+      return;
+    }
+  }
+
+  message.innerHTML =
+    `<p class="success">${ids.length} submissions approved.</p>`;
+
+  await loadApprovals();
+  await loadOverview();
+}
+
+
+async function bulkReject() {
+
+  const ids =
+    getSelectedApprovals();
+
+  if (ids.length === 0) {
+
+    alert(
+      "Select at least one pending submission."
+    );
+
+    return;
+  }
+
+  if (!confirm(
+    `Reject ${ids.length} selected submission(s)?`
+  ))
+    return;
+
+  const message =
+    document.getElementById("approvalMessage");
+
+  for (const id of ids) {
+
+    const { error } =
+      await supabaseClient
+        .from("task_completions")
+        .update({
+          status: "rejected"
+        })
+        .eq("id", id)
+        .eq("status", "pending");
+
+    if (error) {
+
+      message.innerHTML =
+        `<p class="error">${escapeHTML(error.message)}</p>`;
+
+      return;
+    }
+  }
+
+  message.innerHTML =
+    `<p class="success">${ids.length} submissions rejected.</p>`;
+
+  await loadApprovals();
+  await loadOverview();
+}
+
+
+/* ===========================
+   USERS
+=========================== */
+
+async function loadUsers() {
+
+  const { data, error } =
+    await supabaseClient
+      .from("profiles")
+      .select("*")
+      .order("full_name");
+
+  const list =
+    document.getElementById("userList");
+
+  if (error) {
+
+    list.innerHTML =
+      `<p class="error">${escapeHTML(error.message)}</p>`;
+
+    return;
+  }
+
+  allUsers = data || [];
+
+  renderUsers(allUsers);
+}
+
+
+function renderUsers(users) {
+
+  const list =
+    document.getElementById("userList");
+
+  if (!users.length) {
+
+    list.innerHTML =
+      "<p>No users found.</p>";
+
+    return;
+  }
+
+  list.innerHTML = "";
+
+  users.forEach(user => {
+
+    const row =
+      document.createElement("div");
+
+    row.className = "row";
+
+    row.innerHTML = `
+      <h4>${escapeHTML(user.full_name || "User")}</h4>
+
+      <p class="muted">
+        User ID: ${escapeHTML(user.id)}
+      </p>
+
+      <p class="muted">
+        Balance:
+        <strong>
+          ₦${Number(user.balance || 0).toLocaleString()}
+        </strong>
+      </p>
+
+      <p class="muted">
+        Activated:
+        <strong>
+          ${user.is_activated ? "Yes" : "No"}
+        </strong>
+      </p>
+
+      <p class="muted">
+        Admin:
+        <strong>
+          ${user.is_admin ? "Yes" : "No"}
+        </strong>
+      </p>
+    `;
+
+    list.appendChild(row);
+  });
+}
+
+
+function filterUsers() {
+
+  const search =
+    document.getElementById("userSearch")
+      .value
+      .toLowerCase();
+
+  const filtered =
+    allUsers.filter(user =>
+      String(user.full_name || "")
+        .toLowerCase()
+        .includes(search)
+      ||
+      String(user.id || "")
+        .toLowerCase()
+        .includes(search)
+    );
+
+  renderUsers(filtered);
+}
+
+
+/* ===========================
+   DEPOSITS
+=========================== */
+
+async function loadDeposits() {
+
+  const list =
+    document.getElementById("depositList");
+
+  const { data, error } =
+    await supabaseClient
+      .from("deposits")
+      .select("*")
+      .order("id", {
+        ascending: false
+      });
+
+  if (error) {
+
+    list.innerHTML =
+      `<p class="error">${escapeHTML(error.message)}</p>`;
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+
+    list.innerHTML =
+      "<p>No deposits found.</p>";
+
+    return;
+  }
+
+  list.innerHTML = "";
+
+  data.forEach(deposit => {
+
+    const row =
+      document.createElement("div");
+
+    row.className = "row";
+
+    row.innerHTML = `
+      <h4>
+        Deposit #${escapeHTML(deposit.id)}
+      </h4>
+
+      <p class="muted">
+        User: ${escapeHTML(deposit.user_id)}
+      </p>
+
+      <p class="muted">
+        Amount:
+        <strong>
+          ₦${Number(deposit.amount || 0).toLocaleString()}
+        </strong>
+      </p>
+
+      <p class="muted">
+        Reference:
+        ${escapeHTML(deposit.reference || "None")}
+      </p>
+    `;
+
+    list.appendChild(row);
+  });
+}
+
+
+/* ===========================
+   WITHDRAWALS
+=========================== */
+
+async function loadWithdrawals() {
+
+  const list =
+    document.getElementById("withdrawalList");
+
+  const { data, error } =
+    await supabaseClient
+      .from("withdrawals")
+      .select("*")
+      .order("id", {
+        ascending: false
+      });
+
+  if (error) {
+
+    list.innerHTML =
+      `<p class="error">${escapeHTML(error.message)}</p>`;
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+
+    list.innerHTML =
+      "<p>No withdrawal requests found.</p>";
+
+    return;
+  }
+
+  list.innerHTML = "";
+
+  data.forEach(withdrawal => {
+
+    const row =
+      document.createElement("div");
+
+    row.className = "row";
+
+    row.innerHTML = `
+      <h4>
+        Withdrawal #${escapeHTML(withdrawal.id)}
+      </h4>
+
+      <p class="muted">
+        User: ${escapeHTML(withdrawal.user_id)}
+      </p>
+
+      <p class="muted">
+        Amount:
+        <strong>
+          ₦${Number(withdrawal.amount || 0).toLocaleString()}
+        </strong>
+      </p>
+
+      <p class="muted">
+        Bank:
+        ${escapeHTML(withdrawal.bank_name || "")}
+      </p>
+
+      <p class="muted">
+        Account:
+        ${escapeHTML(withdrawal.account_name || "")}
+      </p>
+
+      <p class="muted">
+        Account Number:
+        ${escapeHTML(withdrawal.account_number || "")}
+      </p>
+    `;
+
+    list.appendChild(row);
+  });
+}
+
+
+/* ===========================
+   SETTINGS
+=========================== */
+
+async function loadSettings() {
+
+  const { data, error } =
+    await supabaseClient
+      .from("admin_settings")
+      .select("*")
+      .limit(1)
+      .single();
+
+  if (error || !data)
+    return;
+
+  document.getElementById("settingsBank")
+    .value =
+      data.bank_name || "";
+
+  document.getElementById("settingsName")
+    .value =
+      data.account_name || "";
+
+  document.getElementById("settingsNumber")
+    .value =
+      data.account_number || "";
+}
+
+
+async function saveSettings() {
+
+  const bank =
+    document.getElementById("settingsBank")
+      .value.trim();
+
+  const name =
+    document.getElementById("settingsName")
+      .value.trim();
+
+  const number =
+    document.getElementById("settingsNumber")
+      .value.trim();
+
+  const message =
+    document.getElementById("settingsMessage");
+
+  const { data: existing } =
+    await supabaseClient
+      .from("admin_settings")
+      .select("id")
+      .limit(1)
+      .maybeSingle();
+
+  let result;
+
+  if (existing) {
+
+    result =
+      await supabaseClient
+        .from("admin_settings")
+        .update({
+          bank_name: bank,
+          account_name: name,
+          account_number: number
+        })
+        .eq("id", existing.id);
+
+  } else {
+
+    result =
+      await supabaseClient
+        .from("admin_settings")
+        .insert({
+          bank_name: bank,
+          account_name: name,
+          account_number: number
+        });
+  }
+
+  if (result.error) {
+
+    message.innerHTML =
+      `<p class="error">${escapeHTML(result.error.message)}</p>`;
+
+    return;
+  }
+
+  message.innerHTML =
+    '<p class="success">Payment settings saved.</p>';
+}
+
+
+/* ===========================
+   NAVIGATION
+=========================== */
+
+function showSection(id, button) {
+
+  document
+    .querySelectorAll(".section")
+    .forEach(section =>
+      section.classList.remove("active")
+    );
+
+  document
+    .getElementById(id)
+    .classList.add("active");
+
+  document
+    .querySelectorAll(".nav button")
+    .forEach(btn =>
+      btn.classList.remove("active")
+    );
+
+  if (button)
+    button.classList.add("active");
+
+  if (id === "approvals")
+    loadApprovals();
+
+  if (id === "users")
+    loadUsers();
+
+  if (id === "tasks")
+    loadTasks();
+
+  if (id === "deposits")
+    loadDeposits();
+
+  if (id === "withdrawals")
+    loadWithdrawals();
+}
+
+
+/* ===========================
+   LOGOUT
+=========================== */
+
+async function adminLogout() {
+
+  await supabaseClient.auth.signOut();
+
+  location.reload();
+}
+
+
+/* ===========================
+   HTML SECURITY
+=========================== */
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+
+/* ===========================
+   START
+=========================== */
+
+checkAdminSession();
+
+</script>
+
+</body>
+</html>
