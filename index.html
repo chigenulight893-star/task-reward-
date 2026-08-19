@@ -47,9 +47,9 @@ header h1{
 .header-logout{
   background:white;
   color:#087f5b;
+  border:none;
   padding:10px 15px;
   border-radius:9px;
-  border:none;
   font-weight:bold;
   margin-top:12px;
   cursor:pointer;
@@ -183,7 +183,7 @@ label{
   margin-bottom:8px;
 }
 
-.auth-box p{
+.auth-box > p{
   color:#65716d;
   margin-bottom:20px;
 }
@@ -192,12 +192,14 @@ label{
   color:#b42318;
   margin-top:10px;
   font-size:14px;
+  line-height:1.5;
 }
 
 .success{
   color:#087f5b;
   margin-top:10px;
   font-size:14px;
+  line-height:1.5;
 }
 
 .status{
@@ -243,23 +245,15 @@ label{
   display:block;
 }
 
-.auth-toggle{
+.loading{
   text-align:center;
-  margin-top:15px;
+  padding:25px;
   color:#66736e;
-}
-
-.auth-toggle button{
-  background:none;
-  color:#087f5b;
-  padding:0;
-  margin:0;
 }
 </style>
 </head>
 
 <body>
-
 
 <!-- ========================= -->
 <!-- LOGIN / SIGNUP -->
@@ -312,11 +306,10 @@ Login
 
 
 <!-- ========================= -->
-<!-- MAIN APP -->
+<!-- MAIN USER DASHBOARD -->
 <!-- ========================= -->
 
 <div id="app" class="container hidden">
-
 
 <header>
 
@@ -325,8 +318,6 @@ Login
 <div class="top-user">
 Welcome, <span id="userName">User</span>
 </div>
-
-<!-- DIRECT LOGOUT BUTTON -->
 
 <button
 class="header-logout"
@@ -338,7 +329,6 @@ onclick="logout()">
 
 
 <div class="content">
-
 
 <!-- BALANCE -->
 
@@ -420,9 +410,7 @@ Activate for ₦1,000
 
 <!-- HOME -->
 
-<div
-id="home"
-class="section active">
+<div id="home" class="section active">
 
 <div class="card">
 
@@ -440,9 +428,7 @@ has been activated.
 
 <!-- TASKS -->
 
-<div
-id="tasks"
-class="section">
+<div id="tasks" class="section">
 
 <div
 id="lockedTasks"
@@ -473,9 +459,7 @@ class="card hidden">
 
 <!-- DEPOSIT -->
 
-<div
-id="deposit"
-class="section">
+<div id="deposit" class="section">
 
 <div class="card">
 
@@ -541,9 +525,7 @@ Submit Deposit
 
 <!-- WITHDRAW -->
 
-<div
-id="withdraw"
-class="section">
+<div id="withdraw" class="section">
 
 <div class="card">
 
@@ -597,9 +579,7 @@ Request Withdrawal
 
 <!-- PROFILE -->
 
-<div
-id="profile"
-class="section">
+<div id="profile" class="section">
 
 <div class="card">
 
@@ -624,9 +604,7 @@ class="section">
 
 <!-- TRANSACTIONS -->
 
-<div
-id="transactions"
-class="section">
+<div id="transactions" class="section">
 
 <div class="card">
 
@@ -640,739 +618,11 @@ No transactions yet.
 
 </div>
 
-
 </div>
+
 </div>
 
 
 <script>
 
-
-// ===========================
-// SUPABASE
-// ===========================
-
-const SUPABASE_URL =
-"https://ztvliwkztcxmdoidowxn.supabase.co";
-
-const SUPABASE_KEY =
-"sb_publishable_QrM6y6lTW4M63DaGzO28_g_NeePqlwb";
-
-const supabaseClient =
-supabase.createClient(
-SUPABASE_URL,
-SUPABASE_KEY
-);
-
-let currentUser=null;
-let currentProfile=null;
-
-
-// ===========================
-// SIGN UP
-// ===========================
-
-async function signUp(){
-
-const name=
-document.getElementById("fullName")
-.value.trim();
-
-const email=
-document.getElementById("email")
-.value.trim();
-
-const password=
-document.getElementById("password")
-.value;
-
-const message=
-document.getElementById("authMessage");
-
-
-if(!name || !email || !password){
-
-message.innerHTML=
-'<p class="error">Please fill all fields.</p>';
-
-return;
-}
-
-
-if(password.length < 6){
-
-message.innerHTML=
-'<p class="error">Password must be at least 6 characters.</p>';
-
-return;
-}
-
-
-const {data,error}=
-await supabaseClient.auth.signUp({
-
-email:email,
-
-password:password
-
-});
-
-
-if(error){
-
-message.innerHTML=
-`<p class="error">${escapeHTML(error.message)}</p>`;
-
-return;
-}
-
-
-if(!data.user){
-
-message.innerHTML=
-'<p class="error">Account could not be created.</p>';
-
-return;
-}
-
-
-const {error:profileError}=
-await supabaseClient
-.from("profiles")
-.insert({
-
-id:data.user.id,
-
-full_name:name,
-
-username:email.split("@")[0]
-
-});
-
-
-if(profileError){
-
-message.innerHTML=
-`<p class="error">${escapeHTML(profileError.message)}</p>`;
-
-return;
-}
-
-
-message.innerHTML=
-'<p class="success">Account created successfully. You can now login.</p>';
-
-}
-
-
-// ===========================
-// LOGIN
-// ===========================
-
-async function login(){
-
-const email=
-document.getElementById("email")
-.value.trim();
-
-const password=
-document.getElementById("password")
-.value;
-
-const message=
-document.getElementById("authMessage");
-
-
-if(!email || !password){
-
-message.innerHTML=
-'<p class="error">Enter your email and password.</p>';
-
-return;
-}
-
-
-const {data,error}=
-await supabaseClient.auth
-.signInWithPassword({
-
-email:email,
-
-password:password
-
-});
-
-
-if(error){
-
-message.innerHTML=
-`<p class="error">${escapeHTML(error.message)}</p>`;
-
-return;
-}
-
-
-currentUser=data.user;
-
-await loadDashboard();
-
-}
-
-
-// ===========================
-// LOAD DASHBOARD
-// ===========================
-
-
-async function loadDashboard() {
-  try {
-    if (!currentUser) {
-      showAuthError("No logged-in user was found.");
-      return;
-    }
-
-    const { data: profile, error } = await supabaseClient
-      .from("profiles")
-      .select("*")
-      .eq("id", currentUser.id)
-      .maybeSingle();
-
-    if (error) {
-      showAuthError("Profile error: " + error.message);
-      return;
-    }
-
-    if (!profile) {
-      showAuthError(
-        "Your login worked, but your profile was not found. User ID: " +
-        currentUser.id
-      );
-      return;
-    }
-
-    currentProfile = profile;
-
-    document.getElementById("authPage").classList.add("hidden");
-    document.getElementById("app").classList.remove("hidden");
-
-    document.getElementById("userName").textContent =
-      profile.full_name || "User";
-
-    document.getElementById("profileName").textContent =
-      profile.full_name || "User";
-
-    document.getElementById("profileEmail").textContent =
-      currentUser.email || "";
-
-    document.getElementById("balance").textContent =
-      Number(profile.balance || 0).toLocaleString("en-NG", {
-        minimumFractionDigits: 2
-      });
-
-    updateActivationUI();
-
-    loadSettings();
-    loadTasks();
-    loadTransactions();
-
-  } catch (error) {
-    showAuthError("Dashboard error: " + error.message);
-  }
-}
-  
- function showAuthError(message) {
-  const box = document.getElementById("authMessage");
-
-  document.getElementById("authPage").classList.remove("hidden");
-  document.getElementById("app").classList.add("hidden");
-
-  box.innerHTML = `
-    <div style="
-      margin-top:15px;
-      padding:14px;
-      background:#ffe5e5;
-      color:#b42318;
-      border-radius:10px;
-      font-size:14px;
-      word-break:break-word;
-    ">
-      ${escapeHTML(message)}
-    </div>
-  `;
-  }
-// ===========================
-// ACTIVATION UI
-// ===========================
-
-function updateActivationUI(){
-
-const status=
-document.getElementById("status");
-
-const activation=
-document.getElementById("activationBox");
-
-const locked=
-document.getElementById("lockedTasks");
-
-const taskList=
-document.getElementById("taskList");
-
-
-if(currentProfile.is_activated){
-
-status.textContent="Activated";
-
-status.className=
-"status active";
-
-activation.classList.add("hidden");
-
-locked.classList.add("hidden");
-
-taskList.classList.remove("hidden");
-
-}else{
-
-status.textContent="Inactive";
-
-status.className=
-"status inactive";
-
-activation.classList.remove("hidden");
-
-locked.classList.remove("hidden");
-
-taskList.classList.add("hidden");
-
-}
-
-}
-
-
-// ===========================
-// LOAD ADMIN PAYMENT SETTINGS
-// ===========================
-
-async function loadSettings(){
-
-const {data,error}=
-await supabaseClient
-.from("admin_settings")
-.select("*")
-.limit(1)
-.single();
-
-
-if(error){
-
-console.log(error);
-
-return;
-}
-
-
-document
-.getElementById("bankName")
-.textContent=
-data.bank_name || "Not provided";
-
-
-document
-.getElementById("accountName")
-.textContent=
-data.account_name || "Not provided";
-
-
-document
-.getElementById("accountNumber")
-.textContent=
-data.account_number || "Not provided";
-
-}
-
-
-// ===========================
-// LOAD TASKS
-// ===========================
-
-async function loadTasks(){
-
-if(!currentProfile.is_activated)
-return;
-
-
-const {data,error}=
-await supabaseClient
-.from("tasks")
-.select("*")
-.eq("status","active")
-.order(
-"created_at",
-{
-ascending:false
-}
-);
-
-
-const container=
-document.getElementById("tasksContainer");
-
-
-if(error){
-
-container.innerHTML=
-`<p class="error">${escapeHTML(error.message)}</p>`;
-
-return;
-}
-
-
-if(!data || data.length===0){
-
-container.innerHTML=
-"<p>No tasks available right now.</p>";
-
-return;
-}
-
-
-container.innerHTML="";
-
-
-data.forEach(task=>{
-
-const div=
-document.createElement("div");
-
-div.className="task";
-
-
-div.innerHTML=`
-
-<h4>
-${escapeHTML(task.title)}
-</h4>
-
-<p>
-${escapeHTML(task.description || "")}
-</p>
-
-<p>
-Reward:
-<strong>
-₦${Number(task.reward || 0).toLocaleString()}
-</strong>
-</p>
-
-`;
-
-
-container.appendChild(div);
-
-});
-
-}
-
-
-// ===========================
-// DEPOSIT
-// ===========================
-
-async function submitDeposit(){
-
-const amount=
-Number(
-document
-.getElementById("depositAmount")
-.value
-);
-
-const reference=
-document
-.getElementById("depositReference")
-.value.trim();
-
-const message=
-document.getElementById("depositMessage");
-
-
-if(!amount || amount<=0){
-
-message.innerHTML=
-'<p class="error">Enter a valid amount.</p>';
-
-return;
-}
-
-
-const {error}=
-await supabaseClient
-.from("deposits")
-.insert({
-
-user_id:currentUser.id,
-
-amount:amount,
-
-reference:reference,
-
-status:"pending"
-
-});
-
-
-if(error){
-
-message.innerHTML=
-`<p class="error">${escapeHTML(error.message)}</p>`;
-
-return;
-}
-
-
-message.innerHTML=
-'<p class="success">Deposit submitted for review.</p>';
-
-}
-
-
-// ===========================
-// WITHDRAWAL
-// ===========================
-
-async function requestWithdrawal(){
-
-const amount=
-Number(
-document
-.getElementById("withdrawAmount")
-.value
-);
-
-const bank=
-document
-.getElementById("withdrawBank")
-.value.trim();
-
-const name=
-document
-.getElementById("withdrawName")
-.value.trim();
-
-const account=
-document
-.getElementById("withdrawAccount")
-.value.trim();
-
-const message=
-document
-.getElementById("withdrawMessage");
-
-
-if(!currentProfile.is_activated){
-
-message.innerHTML=
-'<p class="error">Your account must be activated first.</p>';
-
-return;
-}
-
-
-if(amount < 1000){
-
-message.innerHTML=
-'<p class="error">Minimum withdrawal is ₦1,000.</p>';
-
-return;
-}
-
-
-if(!bank || !name || !account){
-
-message.innerHTML=
-'<p class="error">Please complete your bank details.</p>';
-
-return;
-}
-
-
-if(amount > Number(currentProfile.balance || 0)){
-
-message.innerHTML=
-'<p class="error">Insufficient balance.</p>';
-
-return;
-}
-
-
-const {error}=
-await supabaseClient
-.from("withdrawals")
-.insert({
-
-user_id:currentUser.id,
-
-amount:amount,
-
-bank_name:bank,
-
-account_name:name,
-
-account_number:account,
-
-status:"pending"
-
-});
-
-
-if(error){
-
-message.innerHTML=
-`<p class="error">${escapeHTML(error.message)}</p>`;
-
-return;
-}
-
-
-message.innerHTML=
-'<p class="success">Withdrawal request submitted for review.</p>';
-
-}
-
-
-// ===========================
-// TRANSACTIONS
-// ===========================
-
-async function loadTransactions(){
-
-const {data,error}=
-await supabaseClient
-.from("transactions")
-.select("*")
-.eq("user_id",currentUser.id)
-.order(
-"created_at",
-{
-ascending:false
-}
-);
-
-
-const list=
-document.getElementById("transactionList");
-
-
-if(error){
-
-list.innerHTML=
-`<p class="error">${escapeHTML(error.message)}</p>`;
-
-return;
-}
-
-
-if(!data || data.length===0){
-
-list.textContent=
-"No transactions yet.";
-
-return;
-}
-
-
-list.innerHTML="";
-
-
-data.forEach(transaction=>{
-
-const item=
-document.createElement("div");
-
-item.className="task";
-
-
-item.innerHTML=`
-
-<strong>
-${escapeHTML(transaction.type)}
-</strong>
-
-<p>
-₦${Number(transaction.amount || 0).toLocaleString()}
-</p>
-
-<p>
-${escapeHTML(transaction.description || "")}
-</p>
-
-`;
-
-
-list.appendChild(item);
-
-});
-
-}
-
-
-// ===========================
-// NAVIGATION
-// ===========================
-
-function showSection(section){
-
-document
-.querySelectorAll(".section")
-.forEach(element=>{
-
-element.classList.remove("active");
-
-});
-
-
-const selected=
-document.getElementById(section);
-
-
-if(selected){
-
-selected.classList.add("active");
-
-}
-
-}
-
-
-// ===========================
-// LOGOUT
-// ===========================
-
-async function logout(){
-
-try{
-
-await supabaseClient.auth.signOut({
-scope:"local"
-});
-
-}catch(error){
-
-console.log(error);
-
-}
-
-
-// Clear local session information
-
-currentUser=null;
-
-currentProfile=null;
-
-
-// Return to login screen
-
-document
-.getElementById("app")
-.classList
+/* ===========================
