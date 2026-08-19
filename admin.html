@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskReward Admin</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f7f6;
+  color:#17201d
+}
+header{
+  background:#087f5b;
+  color:white;
+  padding:18px
+}
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:15px
+}
+.card{
+  background:white;
+  padding:18px;
+  border-radius:14px;
+  margin-bottom:15px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06)
+}
+input,textarea{
+  width:100%;
+  padding:12px;
+  margin:7px 0 12px;
+  border:1px solid #ccd5d1;
+  border-radius:8px
+}
+button{
+  padding:11px 15px;
+  border:0;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  margin:4px
+}
+.green{background:#087f5b;color:white}
+.red{background:#d92d20;color:white}
+.gray{background:#e8eeeb;color:#17201d}
+.yellow{background:#fff0b8;color:#765b00}
+.nav{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  margin-bottom:15px
+}
+.nav button{white-space:nowrap}
+.nav .selected{
+  background:#087f5b;
+  color:white
+}
+.section{display:none}
+.section.active{display:block}
+.row{
+  border:1px solid #e0e6e3;
+  border-radius:10px;
+  padding:14px;
+  margin-top:10px
+}
+.small{
+  color:#68746f;
+  font-size:13px;
+  margin:5px 0
+}
+.error{color:#c62828}
+.success{color:#087f5b}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px
+}
+.stat{
+  background:white;
+  padding:15px;
+  border-radius:12px
+}
+.stat h2{
+  color:#087f5b;
+  margin:7px 0 0
+}
+.hidden{display:none!important}
+.status{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold
+}
+.pending{background:#fff0b8;color:#765b00}
+.approved{background:#d9f7eb;color:#087f5b}
+.rejected{background:#ffe2e0;color:#b42318}
+.actions{margin-top:8px}
+a{color:#087f5b;font-weight:bold}
+
+@media(max-width:700px){
+  .stats{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+
+<div id="loginPage" class="container">
+
+  <div class="card" style="max-width:450px;margin:60px auto">
+
+    <h2 style="color:#087f5b">
+      TaskReward Admin
+    </h2>
+
+    <p class="small">
+      Administrator Login
+    </p>
+
+    <input
+      id="email"
+      type="email"
+      placeholder="Admin email"
+    >
+
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+    >
+
+    <button
+      class="green"
+      style="width:100%"
+      onclick="login()"
+    >
+      Login
+    </button>
+
+    <div id="loginMessage"></div>
+
+  </div>
+
+</div>
+
+
+<!-- ADMIN -->
+
+<div id="adminPage" class="hidden">
+
+<header>
+  <div class="container">
+    <h2>TaskReward Admin</h2>
+    <div class="small" style="color:white">
+      Administrator Dashboard
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- NAV -->
+
+<div class="nav">
+
+<button class="selected"
+onclick="showSection('overview',this)">
+📊 Overview
+</button>
+
+<button
+onclick="showSection('tasks',this)">
+📋 Tasks
+</button>
+
+<button
+onclick="showSection('approvals',this)">
+✅ Approvals
+</button>
+
+<button
+onclick="showSection('users',this)">
+👥 Users
+</button>
+
+<button
+onclick="showSection('deposits',this)">
+💳 Deposits
+</button>
+
+<button
+onclick="showSection('withdrawals',this)">
+💸 Withdrawals
+</button>
+
+<button
+onclick="logout()">
+🚪 Logout
+</button>
+
+</div>
+
+
+<!-- OVERVIEW -->
+
+<section id="overview" class="section active">
+
+<div class="stats">
+
+<div class="stat">
+<div class="small">Total Users</div>
+<h2 id="totalUsers">0</h2>
+</div>
+
+<div class="stat">
+<div class="small">Activated</div>
+<h2 id="activatedUsers">0</h2>
+</div>
+
+<div class="stat">
+<div class="small">Pending Tasks</div>
+<h2 id="pendingTasks">0</h2>
+</div>
+
+<div class="stat">
+<div class="small">Total Balance</div>
+<h2>₦<span id="totalBalance">0.00</span></h2>
+</div>
+
+</div>
+
+</section>
+
+
+<!-- TASKS -->
+
+<section id="tasks" class="section">
+
+<div class="card">
+
+<h3>Create Task</h3>
+
+<input
+id="taskTitle"
+placeholder="Task title"
+>
+
+<textarea
+id="taskDescription"
+placeholder="Task description"
+></textarea>
+
+<input
+id="taskReward"
+type="number"
+placeholder="Reward"
+>
+
+<button
+class="green"
+onclick="createTask()">
+Create Task
+</button>
+
+<div id="taskMessage"></div>
+
+</div>
+
+<div class="card">
+
+<h3>Existing Tasks</h3>
+
+<div id="taskList">
+Loading...
+</div>
+
+</div>
+
+</section>
+
+
+<!-- APPROVALS -->
+
+<section id="approvals" class="section">
+
+<div class="card">
+
+<h3>Task Approvals</h3>
+
+<button
+class="gray"
+onclick="selectAll()">
+Select All
+</button>
+
+<button
+class="green"
+onclick="bulkApprove()">
+Approve Selected
+</button>
+
+<button
+class="red"
+onclick="bulkReject()">
+Reject Selected
+</button>
+
+</div>
+
+<div class="card">
+
+<div id="approvalList">
+Loading...
+</div>
+
+</div>
+
+</section>
+
+
+<!-- USERS -->
+
+<section id="users" class="section">
+
+<div class="card">
+
+<h3>Users</h3>
+
+<div id="userList">
+Loading...
+</div>
+
+</div>
+
+</section>
+
+
+<!-- DEPOSITS -->
+
+<section id="deposits" class="section">
+
+<div class="card">
+
+<h3>Deposit Management</h3>
+
+<p class="small">
+Verify the payment proof before approving.
+Approval automatically adds the amount to the user's balance.
+</p>
+
+<div id="depositList">
+Loading...
+</div>
+
+</div>
+
+</section>
+
+
+<!-- WITHDRAWALS -->
+
+<section id="withdrawals" class="section">
+
+<div class="card">
+
+<h3>Withdrawals</h3>
+
+<div id="withdrawalList">
+Loading...
+</div>
+
+</div>
+
+</section>
+
+</div>
+</div>
+
+
+<script>
+
+/* =========================
+SUPABASE
+========================= */
+
+const SUPABASE_URL =
+"https://ztvliwkztcxmdoidowxn.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_QrM6y6lTW4M63DaGzO28_g_NeePqlwb";
+
+const db =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+/* =========================
+LOGIN
+========================= */
+
+async function login(){
+
+const email =
+document.getElementById("email").value.trim();
+
+const password =
+document.getElementById("password").value;
+
+const msg =
+document.getElementById("loginMessage");
+
+msg.innerHTML="";
+
+const {data,error} =
+await db.auth.signInWithPassword({
+email,
+password
+});
+
+if(error){
+
+msg.innerHTML =
+`<p class="error">${safe(error.message)}</p>`;
+
+return;
+}
+
+const {data:profile,error:profileError} =
+await db
+.from("profiles")
+.select("id,is_admin")
+.eq("id",data.user.id)
+.single();
+
+if(
+profileError ||
+!profile ||
+profile.is_admin !== true
+){
+
+await db.auth.signOut();
+
+msg.innerHTML =
+'<p class="error">This account is not an admin.</p>';
+
+return;
+}
+
+document
+.getElementById("loginPage")
+.classList.add("hidden");
+
+document
+.getElementById("adminPage")
+.classList.remove("hidden");
+
+loadAll();
+}
+
+
+/* =========================
+SESSION
+========================= */
+
+async function checkSession(){
+
+const {data} =
+await db.auth.getSession();
+
+if(!data.session)return;
+
+const {data:profile} =
+await db
+.from("profiles")
+.select("id,is_admin")
+.eq("id",data.session.user.id)
+.single();
+
+if(!profile || profile.is_admin !== true){
+await db.auth.signOut();
+return;
+}
+
+document
+.getElementById("loginPage")
+.classList.add("hidden");
+
+document
+.getElementById("adminPage")
+.classList.remove("hidden");
+
+loadAll();
+}
+
+
+/* =========================
+LOAD ALL
+========================= */
+
+async function loadAll(){
+
+await loadOverview();
+await loadTasks();
+await loadApprovals();
+await loadUsers();
+await loadDeposits();
+await loadWithdrawals();
+
+}
+
+
+/* =========================
+OVERVIEW
+========================= */
+
+async function loadOverview(){
+
+const {data:users} =
+await db
+.from("profiles")
+.select("balance,is_activated");
+
+if(users){
+
+document.getElementById("totalUsers")
+.textContent=users.length;
+
+document.getElementById("activatedUsers")
+.textContent=
+users.filter(
+u=>u.is_activated===true
+).length;
+
+const total =
+users.reduce(
+(sum,u)=>sum+Number(u.balance||0),
+0
+);
+
+document.getElementById("totalBalance")
+.textContent=
+total.toLocaleString(
+"en-NG",
+{minimumFractionDigits:2}
+);
+}
+
+const {data:pending} =
+await db
+.from("task_completions")
+.select("id")
+.eq("status","pending");
+
+document.getElementById("pendingTasks")
+.textContent=
+pending ? pending.length : 0;
+}
+
+
+/* =========================
+CREATE TASK
+========================= */
+
+async function createTask(){
+
+const title =
+document.getElementById("taskTitle")
+.value.trim();
+
+const description =
+document.getElementById("taskDescription")
+.value.trim();
+
+const reward =
+Number(
+document.getElementById("taskReward")
+.value
+);
+
+const msg =
+document.getElementById("taskMessage");
+
+if(!title || !description || reward<=0){
+
+msg.innerHTML =
+'<p class="error">Fill all fields correctly.</p>';
+
+return;
+}
+
+const {error} =
+await db
+.from("tasks")
+.insert({
+title,
+description,
+reward,
+active:true,
+status:"active"
+});
+
+if(error){
+
+msg.innerHTML =
+`<p class="error">${safe(error.message)}</p>`;
+
+return;
+}
+
+document.getElementById("taskTitle").value="";
+document.getElementById("taskDescription").value="";
+document.getElementById("taskReward").value="";
+
+msg.innerHTML =
+'<p class="success">Task created successfully.</p>';
+
+loadTasks();
+}
+
+
+/* =========================
+LOAD TASKS
+========================= */
+
+async function loadTasks(){
+
+const list =
+document.getElementById("taskList");
+
+const {data,error} =
+await db
+.from("tasks")
+.select("*")
+.order("id",{ascending:false});
+
+if(error){
+
+list.innerHTML =
+`<p class="error">${safe(error.message)}</p>`;
+
+return;
+}
+
+if(!data || data.length===0){
+
+list.innerHTML="<p>No tasks.</p>";
+return;
+}
+
+list.innerHTML="";
+
+data.forEach(task=>{
+
+const row =
+document.createElement("div");
+
+row.className="row";
+
+row.innerHTML=`
+
+<h4>${safe(task.title)}</h4>
+
+<p class="small">
+${safe(task.description || "")}
+</p>
+
+<p class="small">
+Reward:
+<strong>
+₦${Number(task.reward||0).toLocaleString()}
+</strong>
+</p>
+
+<p class="small">
+Status:
+${safe(task.status || "")}
+</p>
+
+<button
+class="${task.active?'yellow':'green'}"
+onclick="toggleTask(${task.id},${task.active})">
+
+${task.active?'Deactivate':'Activate'}
+
+</button>
+
+`;
+
+list.appendChild(row);
+
+});
+
+}
+
+
+async function toggleTask(id,current){
+
+const {error} =
+await db
+.from("tasks")
+.update({
+active:!current,
+status:!current?"active":"inactive"
+})
+.eq("id",id);
+
+if(error){
+alert(error.message);
+return;
+}
+
+loadTasks();
+}
+
+
+/* =========================
+TASK APPROVALS
+========================= */
+
+async function loadApprovals(){
+
+const list =
+document.getElementById("approvalList");
+
+const {data,error} =
+await db
+.from("task_completions")
+.select(`
+id,
+user_id,
+task_id,
+status
+`)
+.eq("status","pending")
+.order("id",{ascending:false});
+
+if(error){
+
+list.innerHTML =
+`<p class="error">${safe(error.message)}</p>`;
+
+return;
+}
+
+if(!data || data.length===0){
+
+list.innerHTML =
+"<p>No pending submissions.</p>";
+
+return;
+}
+
+list.innerHTML="";
+
+for(const item of data){
+
+let taskTitle="Task";
+
+let reward=0;
+
+const {data:task} =
+await db
+.from("tasks")
+.select("title,reward")
+.eq("id",item.task_id)
+.single();
+
+if(task){
+
+taskTitle=task.title;
+reward=Number(task.reward||0);
+
+}
+
+const row =
+document.createElement("div");
+
+row.className="row";
+
+row.innerHTML=`
+
+<label>
+
+<input
+type="checkbox"
+class="approvalBox"
+value="${safe(item.id)}">
+
+Select
+
+</label>
+
+<h4>
+${safe(taskTitle)}
+</h4>
+
+<p class="small">
+User:
+${safe(item.user_id)}
+</p>
+
+<p class="small">
+Reward:
+<strong>
+₦${reward.toLocaleString()}
+</strong>
+</p>
+
+<div class="actions">
+
+<button
+class="green"
+onclick="approveTask('${safe(item.id)}')">
+Approve
+</button>
+
+<button
+class="red"
+onclick="rejectTask('${safe(item.id)}')">
+Reject
+</button>
+
+</div>
+
+`;
+
+list.appendChild(row);
+
+}
+
+}
+
+
+async function approveTask(id){
+
+if(!confirm("Approve this task submission?"))
+return;
+
+const {data:errorData,error} =
+await db
+.from("task_completions")
+.select("id,user_id,task_id")
+.eq("id",id)
+.eq("status","pending")
+.single();
+
+if(error){
+
+alert(error.message);
+return;
+}
+
+const {data:task, error:taskError} =
+await db
+.from("tasks")
+.select("reward")
+.eq("id",errorData.task_id)
+.single();
+
+if(taskError){
+
+alert(taskError.message);
+return;
+}
+
+const {data:user,error:userError} =
+await db
+.from("profiles")
+.select("balance")
+.eq("id",errorData.user_id)
+.single();
+
+if(userError){
+
+alert(userError.message);
+return;
+}
+
+const newBalance =
+Number(user.balance||0)+
+Number(task.reward||0);
+
+const {error:balanceError} =
+await db
+.from("profiles")
+.update({
+balance:newBalance
+})
+.eq("id",errorData.user_id);
+
+if(balanceError){
+
+alert(balanceError.message);
+return;
+}
+
+const {error:updateError} =
+await db
+.from("task_completions")
+.update({
+status:"approved"
+})
+.eq("id",id)
+.eq("status","pending");
+
+if(updateError){
+
+alert(updateError.message);
+return;
+}
+
+await db
+.from("transactions")
+.insert({
+user_id:errorData.user_id,
+type:"task_reward",
+amount:Number(task.reward||0),
+description:"Task reward"
+});
+
+alert("Task approved and reward added.");
+
+loadApprovals();
+loadOverview();
+}
+
+
+async function rejectTask(id){
+
+if(!confirm("Reject this task submission?"))
+return;
+
+const {error} =
+await db
+.from("task_completions")
+.update({
+status:"rejected"
+})
+.eq("id",id)
+.eq("status","pending");
+
+if(error){
+
+alert(error.message);
+return;
+}
+
+loadApprovals();
+}
+
+
+function selectAll(){
+
+document
+.querySelectorAll(".approvalBox")
+.forEach(
+box=>box.checked=true
+);
+
+}
+
+
+async function bulkApprove(){
+
+const ids =
+Array.from(
+document.querySelectorAll(
+".approvalBox:checked"
+)
+).map(box=>box.value);
+
+if(!ids.length){
+
+alert("Select at least one submission.");
+return;
+}
+
+if(!confirm(
+"Approve all selected submissions?"
+))
+return;
+
+for(const id of ids){
+
+await approveTask(id);
+
+}
+
+loadApprovals();
+loadOverview();
+}
+
+
+async function bulkReject(){
+
+const ids =
+Array.from(
+document.querySelectorAll(
+".approvalBox:checked"
+)
+).map(box=>box.value);
+
+if(!ids.length){
+
+alert("Select at least one submission.");
+return;
+}
+
+if(!confirm(
+"Reject all selected submissions?"
+))
+return;
+
+const {error} =
+await db
+.from("task_completions")
+.update({
+status:"rejected"
+})
+.in("id",ids)
+.eq("status","pending");
+
+if(error){
+
+alert(error.message);
+return;
+}
+
+loadApprovals();
+}
+
+
+/* =========================
+USERS
+========================= */
+
+async function loadUsers(){
+
+const list =
+document.getElementById("userList");
+
+const {data,error} =
+await db
+.from("profiles")
+.select("id,balance,is_admin,is_activated")
+.order("id");
+
+if(error){
+
+list.innerHTML =
+`<p class="error">${safe(error.message)}</p>`;
+
+return;
+}
+
+if(!data || !data.length){
+
+list.innerHTML="<p>No users.</p>";
+return;
+}
+
+list.innerHTML="";
+
+data.forEach(user=>{
+
+const row =
+document.createElement("div");
+
+row.className="row";
+
+row.innerHTML=`
+
+<h4>User</h4>
+
+<p class="small">
+ID: ${safe(user.id)}
+</p>
+
+<p class="small">
+Balance:
+<strong>
+₦${Number(user.balance||0).toLocaleString()}
+</strong>
+</p>
+
+<p class="small">
+Activated:
+${user.is_activated?"Yes":"No"}
+</p>
+
+<p class="small">
+Admin:
+${user.is_admin?"Yes":"No"}
+</p>
+
+`;
+
+list.appendChild(row);
+
+});
+
+}
+
+
+/* =========================
+DEPOSITS
+========================= */
+
+async function loadDeposits(){
+
+const list =
+document.getElementById("depositList");
+
+const {data,error} =
+await db
+.from("deposits")
+.select("*")
+.order("id",{ascending:false});
+
+if(error){
+
+list.innerHTML =
+`<p class="error">${safe(error.message)}</p>`;
+
+return;
+}
+
+if(!data || !data.length){
+
+list.innerHTML="<p>No deposits found.</p>";
+return;
+}
+
+list.innerHTML="";
+
+data.forEach(deposit=>{
+
+const status =
+String(
+deposit.status||"pending"
+).toLowerCase();
+
+const row =
+document.createElement("div");
+
+row.className="row";
+
+let buttons="";
+
+if(status==="pending"){
+
+buttons=`
+
+<div class="actions">
+
+<button
+class="green"
+onclick="approveDeposit(${deposit.id})">
+✅ Approve
+</button>
+
+<button
+class="red"
+onclick="rejectDeposit(${deposit.id})">
+❌ Reject
+</button>
+
+</div>
+
+`;
+
+}else{
+
+buttons=`
+
+<span class="status ${safe(status)}">
+${safe(status)}
+</span>
+
+`;
+
+}
+
+let proof="";
+
+if(deposit.proof_of_url){
+
+proof=`
+
+<p class="small">
+Payment Proof:
+<a
+href="${safe(deposit.proof_of_url)}"
+target="_blank"
+rel="noopener noreferrer">
+View Proof
+</a>
+</p>
+
+`;
+
+}
+
+row.innerHTML=`
+
+<h4>
+Deposit #${safe(deposit.id)}
+</h4>
+
+<p class="small">
+User ID:
+${safe(deposit.user_id)}
+</p>
+
+<p class="small">
+Amount:
+<strong>
+₦${Number(
+deposit.amount||0
+).toLocaleString(
+"en-NG",
+{minimumFractionDigits:2}
+)}
+</strong>
+</p>
+
+<p class="small">
+Reference:
+${safe(deposit.reference||"None")}
+</p>
+
+${proof}
+
+<p class="small">
+Status:
+${safe(status)}
+</p>
+
+${buttons}
+
+`;
+
+list.appendChild(row);
+
+});
+
+}
+
+
+/* =========================
+APPROVE DEPOSIT
+========================= */
+
+async function approveDeposit(id){
+
+if(!confirm(
+"Approve this deposit and credit the user's balance?"
+))
+return;
+
+const {error} =
+await db.rpc(
+"approve_deposit",
+{
+p_deposit_id:id
+}
+);
+
+if(error){
+
+alert(
+"Approval failed:\n\n"+
+error.message
+);
+
+return;
+}
+
+alert(
+"Deposit approved successfully.\n\n"+
+"The user's balance has been credited."
+);
+
+await loadDeposits();
+await loadOverview();
+
+}
+
+
+/* =========================
+REJECT DEPOSIT
+========================= */
+
+async function rejectDeposit(id){
+
+if(!confirm(
+"Reject this deposit?"
+))
+return;
+
+const {error} =
+await db
+.from("deposits")
+.update({
+status:"rejected"
+})
+.eq("id",id)
+.eq("status","pending");
+
+if(error){
+
+alert(
+"Rejection failed:\n\n"+
+error.message
+);
+
+return;
+}
+
+alert("Deposit rejected.");
+
+loadDeposits();
+
+}
+
+
+/* =========================
+WITHDRAWALS
+========================= */
+
+async function loadWithdrawals(){
+
+const list =
+document.getElementById(
+"withdrawalList"
+);
+
+const {data,error} =
+await db
+.from("withdrawals")
+.select("id,user_id,amount,status")
+.order("id",{ascending:false});
+
+if(error){
+
+list.innerHTML =
+`<p class="error">${safe(error.message)}</p>`;
+
+return;
+}
+
+if(!data || !data.length){
+
+list.innerHTML=
+"<p>No withdrawals found.</p>";
+
+return;
+}
+
+list.innerHTML="";
+
+data.forEach(w=>{
+
+const row =
+document.createElement("div");
+
+row.className="row";
+
+row.innerHTML=`
+
+<h4>
+Withdrawal #${safe(w.id)}
+</h4>
+
+<p class="small">
+User:
+${safe(w.user_id)}
+</p>
+
+<p class="small">
+Amount:
+<strong>
+₦${Number(
+w.amount||0
+).toLocaleString()}
+</strong>
+</p>
+
+<p class="small">
+Status:
+${safe(w.status||"pending")}
+</p>
+
+`;
+
+list.appendChild(row);
+
+});
+
+}
+
+
+/* =========================
+NAVIGATION
+========================= */
+
+function showSection(id,button){
+
+document
+.querySelectorAll(".section")
+.forEach(
+section=>section.classList.remove("active")
+);
+
+document
+.getElementById(id)
+.classList.add("active");
+
+document
+.querySelectorAll(".nav button")
+.forEach(
+btn=>btn.classList.remove("selected")
+);
+
+button.classList.add("selected");
+
+if(id==="overview")
+loadOverview();
+
+if(id==="tasks")
+loadTasks();
+
+if(id==="approvals")
+loadApprovals();
+
+if(id==="users")
+loadUsers();
+
+if(id==="deposits")
+loadDeposits();
+
+if(id==="withdrawals")
+loadWithdrawals();
+
+}
+
+
+/* =========================
+LOGOUT
+========================= */
+
+async function logout(){
+
+await db.auth.signOut();
+
+location.reload();
+
+}
+
+
+/* =========================
+ESCAPE HTML
+========================= */
+
+function safe(value){
+
+return String(value??"")
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+
+}
+
+
+/* =========================
+START
+========================= */
+
+checkSession();
+
+</script>
+
+</body>
+  </html>
