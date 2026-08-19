@@ -1,482 +1,488 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TaskReward Admin</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>TaskReward Admin</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    body {
-      background: #f4f7f6;
-      color: #17201d;
-    }
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+}
 
-    .container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 20px;
-    }
+body{
+  background:#f4f7f6;
+  color:#17201d;
+}
 
-    header {
-      background: #087f5b;
-      color: white;
-      padding: 22px;
-      border-radius: 15px;
-      margin-bottom: 20px;
-    }
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:18px;
+}
 
-    header h1 {
-      margin-bottom: 5px;
-    }
+header{
+  background:#087f5b;
+  color:white;
+  padding:22px;
+  border-radius:15px;
+  margin-bottom:18px;
+}
 
-    .login,
-    .card {
-      background: white;
-      border-radius: 15px;
-      padding: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.05);
-      margin-bottom: 18px;
-    }
+header h1{
+  font-size:24px;
+}
 
-    input,
-    textarea,
-    select {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ccd5d1;
-      border-radius: 9px;
-      margin-top: 7px;
-      margin-bottom: 12px;
-      outline: none;
-    }
+header p{
+  margin-top:6px;
+  opacity:.9;
+}
 
-    textarea {
-      min-height: 90px;
-      resize: vertical;
-    }
+button{
+  border:0;
+  padding:12px 15px;
+  border-radius:9px;
+  cursor:pointer;
+  font-weight:bold;
+  margin-top:8px;
+}
 
-    label {
-      font-weight: bold;
-      font-size: 14px;
-    }
+.primary{
+  background:#087f5b;
+  color:white;
+}
 
-    button {
-      border: none;
-      padding: 11px 15px;
-      border-radius: 9px;
-      cursor: pointer;
-      font-weight: bold;
-      margin: 4px;
-    }
+.secondary{
+  background:#e9f8f2;
+  color:#087f5b;
+}
 
-    .primary {
-      background: #087f5b;
-      color: white;
-    }
+.danger{
+  background:#ffe5e5;
+  color:#b42318;
+}
 
-    .danger {
-      background: #ffe5e5;
-      color: #b42318;
-    }
+.card{
+  background:white;
+  border:1px solid #e0e6e3;
+  border-radius:15px;
+  padding:18px;
+  margin-bottom:15px;
+}
 
-    .warning {
-      background: #fff1c7;
-      color: #755900;
-    }
+.menu{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-bottom:18px;
+}
 
-    .gray {
-      background: #edf1ef;
-      color: #17201d;
-    }
+.menu button{
+  margin:0;
+}
 
-    .hidden {
-      display: none !important;
-    }
+.section{
+  display:none;
+}
 
-    .tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
+.section.active{
+  display:block;
+}
 
-    .tabs button {
-      margin: 0;
-    }
+input,textarea,select{
+  width:100%;
+  padding:12px;
+  margin-top:7px;
+  border:1px solid #ccd5d1;
+  border-radius:8px;
+}
 
-    .section {
-      display: none;
-    }
+label{
+  display:block;
+  margin-top:12px;
+  font-weight:bold;
+  font-size:14px;
+}
 
-    .section.active {
-      display: block;
-    }
+.item{
+  border:1px solid #e0e6e3;
+  padding:15px;
+  border-radius:12px;
+  margin-top:12px;
+}
 
-    .item {
-      border: 1px solid #e0e6e3;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 12px;
-    }
+.item p{
+  margin-top:6px;
+  color:#66736e;
+  font-size:14px;
+}
 
-    .item p {
-      margin-top: 5px;
-      color: #5f6d67;
-      font-size: 14px;
-    }
+.error{
+  color:#b42318;
+  margin-top:10px;
+}
 
-    .item strong {
-      color: #087f5b;
-    }
+.success{
+  color:#087f5b;
+  margin-top:10px;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-    }
+.hidden{
+  display:none!important;
+}
 
-    .stat {
-      background: #e9f8f2;
-      padding: 18px;
-      border-radius: 12px;
-    }
+.auth{
+  max-width:450px;
+  margin:70px auto;
+  padding:20px;
+}
 
-    .stat h2 {
-      color: #087f5b;
-      margin-top: 5px;
-    }
+.stat{
+  background:#e9f8f2;
+  padding:18px;
+  border-radius:12px;
+  margin-bottom:10px;
+}
 
-    .message {
-      margin-top: 10px;
-      font-size: 14px;
-    }
+.stat strong{
+  font-size:24px;
+  color:#087f5b;
+}
 
-    .success {
-      color: #087f5b;
-    }
-
-    .error {
-      color: #b42318;
-    }
-
-    @media(max-width:700px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .container {
-        padding: 12px;
-      }
-    }
-  </style>
+@media(max-width:600px){
+  .menu{
+    grid-template-columns:1fr 1fr;
+  }
+}
+</style>
 </head>
 
 <body>
 
-<div class="container">
 
-  <header>
-    <h1>TaskReward Admin</h1>
-    <p>Administrator dashboard</p>
-  </header>
+<!-- ADMIN LOGIN -->
 
-
-  <!-- LOGIN -->
-  <div id="loginBox" class="login">
-
-    <h2>Admin Login</h2>
-
-    <br>
-
-    <label>Email</label>
-    <input id="email" type="email" placeholder="Admin email">
-
-    <label>Password</label>
-    <input id="password" type="password" placeholder="Password">
-
-    <button class="primary" onclick="login()">
-      Login
-    </button>
-
-    <div id="loginMessage" class="message"></div>
-
-  </div>
-
-
-  <!-- ADMIN APP -->
-  <div id="adminApp" class="hidden">
-
-    <div class="tabs">
-
-      <button class="primary" onclick="showSection('dashboard')">
-        📊 Dashboard
-      </button>
-
-      <button class="gray" onclick="showSection('users')">
-        👥 Users
-      </button>
-
-      <button class="gray" onclick="showSection('activations')">
-        🔐 Activations
-      </button>
-
-      <button class="gray" onclick="showSection('tasks')">
-        📋 Tasks
-      </button>
-      
-      <button class="gray" onclick="showSection('submissions'); loadSubmissions()">
-  📝 Submissions
-      </button>
-
-      <button class="gray" onclick="showSection('deposits')">
-        💰 Deposits
-      </button>
-
-      <button class="gray" onclick="showSection('withdrawals')">
-        💸 Withdrawals
-      </button>
-
-      <button class="gray" onclick="showSection('transactions')">
-        📜 Transactions
-      </button>
-
-      <button class="gray" onclick="showSection('settings')">
-        ⚙️ Settings
-      </button>
-
-      <button class="danger" onclick="logout()">
-        Logout
-      </button>
-
-    </div>
-
-
-    <!-- DASHBOARD -->
-    <div id="dashboard" class="section active">
-
-      <div class="grid">
-
-        <div class="stat">
-          <p>Total Users</p>
-          <h2 id="totalUsers">0</h2>
-        </div>
-
-        <div class="stat">
-          <p>Inactive Users</p>
-          <h2 id="inactiveUsers">0</h2>
-        </div>
-
-        <div class="stat">
-          <p>Pending Deposits</p>
-          <h2 id="pendingDeposits">0</h2>
-        </div>
-
-        <div class="stat">
-          <p>Pending Withdrawals</p>
-          <h2 id="pendingWithdrawals">0</h2>
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- USERS -->
-    <div id="users" class="section">
-
-      <div class="card">
-
-        <h2>👥 Users</h2>
-
-        <br>
-
-        <div id="usersList">
-          Loading...
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- ACTIVATIONS -->
-    <div id="activations" class="section">
-
-      <div class="card">
-
-        <h2>🔐 Activation Requests</h2>
-
-        <br>
-
-        <div id="activationList">
-          Loading...
-        </div>
-
-      </div>
-
-    </div>
-
-<!-- TASK SUBMISSIONS -->
-<div id="submissions" class="section">
+<div id="loginPage" class="auth">
 
   <div class="card">
 
-    <h2>📝 Task Submissions</h2>
+    <h1>TaskReward Admin</h1>
 
-    <br>
+    <p style="margin-top:8px;color:#66736e">
+      Administrator login
+    </p>
 
-    <div id="submissionsList">
-      Loading...
-    </div>
+    <label>Email</label>
+
+    <input
+      id="adminEmail"
+      type="email"
+      placeholder="Admin email">
+
+    <label>Password</label>
+
+    <input
+      id="adminPassword"
+      type="password"
+      placeholder="Password">
+
+    <button
+      class="primary"
+      style="width:100%"
+      onclick="adminLogin()">
+      Login
+    </button>
+
+    <div id="loginMessage"></div>
 
   </div>
 
 </div>
-    <!-- TASKS -->
-    <div id="tasks" class="section">
-
-      <div class="card">
-
-        <h2>➕ Add Task</h2>
-
-        <label>Task title</label>
-        <input id="taskTitle" placeholder="Task title">
-
-        <label>Description</label>
-        <textarea id="taskDescription"
-                  placeholder="Task description"></textarea>
-
-        <label>Reward</label>
-        <input id="taskReward"
-               type="number"
-               placeholder="Reward amount">
-
-        <button class="primary" onclick="addTask()">
-          Add Task
-        </button>
-
-        <div id="taskMessage" class="message"></div>
-
-      </div>
 
 
-      <div class="card">
+<!-- ADMIN APP -->
 
-        <h2>📋 Existing Tasks</h2>
+<div id="adminApp"
+     class="container hidden">
 
-        <br>
+<header>
 
-        <div id="tasksList">
-          Loading...
-        </div>
+  <h1>TaskReward Admin</h1>
 
-      </div>
+  <p>
+    Administrator Dashboard
+  </p>
 
-    </div>
+  <button
+    class="danger"
+    onclick="adminLogout()">
+    🚪 Logout
+  </button>
 
-
-    <!-- DEPOSITS -->
-    <div id="deposits" class="section">
-
-      <div class="card">
-
-        <h2>💰 Deposits</h2>
-
-        <br>
-
-        <div id="depositsList">
-          Loading...
-        </div>
-
-      </div>
-
-    </div>
+</header>
 
 
-    <!-- WITHDRAWALS -->
-    <div id="withdrawals" class="section">
+<!-- MENU -->
 
-      <div class="card">
+<div class="menu">
 
-        <h2>💸 Withdrawals</h2>
+<button onclick="showSection('dashboard')">
+📊 Dashboard
+</button>
 
-        <br>
+<button onclick="showSection('tasks')">
+📋 Tasks
+</button>
 
-        <div id="withdrawalsList">
-          Loading...
-        </div>
+<button onclick="showSection('submissions');loadSubmissions()">
+📝 Submissions
+</button>
 
-      </div>
+<button onclick="showSection('deposits');loadDeposits()">
+💰 Deposits
+</button>
 
-    </div>
+<button onclick="showSection('withdrawals');loadWithdrawals()">
+💸 Withdrawals
+</button>
 
+<button onclick="showSection('users');loadUsers()">
+👥 Users
+</button>
 
-    <!-- TRANSACTIONS -->
-    <div id="transactions" class="section">
+<button onclick="showSection('settings');loadSettings()">
+🏦 Payment Settings
+</button>
 
-      <div class="card">
-
-        <h2>📜 Transactions</h2>
-
-        <br>
-
-        <div id="transactionsList">
-          Loading...
-        </div>
-
-      </div>
-
-    </div>
+</div>
 
 
-    <!-- SETTINGS -->
-    <div id="settings" class="section">
+<!-- DASHBOARD -->
 
-      <div class="card">
+<div id="dashboard"
+     class="section active">
 
-        <h2>⚙️ Payment Settings</h2>
+<div class="card">
 
-        <br>
+<h2>📊 Dashboard</h2>
 
-        <label>Bank Name</label>
-        <input id="settingBank">
+<br>
 
-        <label>Account Name</label>
-        <input id="settingName">
+<div class="stat">
 
-        <label>Account Number</label>
-        <input id="settingNumber">
+Users
 
-        <label>Activation Fee</label>
-        <input id="settingActivation"
-               type="number">
+<br>
 
-        <label>Minimum Withdrawal</label>
-        <input id="settingMinimum"
-               type="number">
+<strong id="userCount">
+0
+</strong>
 
-        <button class="primary"
-                onclick="saveSettings()">
-          Save Settings
-        </button>
+</div>
 
-        <div id="settingsMessage"
-             class="message"></div>
+<div class="stat">
 
-      </div>
+Pending Deposits
 
-    </div>
+<br>
 
-  </div>
+<strong id="depositCount">
+0
+</strong>
+
+</div>
+
+<div class="stat">
+
+Pending Withdrawals
+
+<br>
+
+<strong id="withdrawCount">
+0
+</strong>
+
+</div>
+
+<div class="stat">
+
+Pending Tasks
+
+<br>
+
+<strong id="submissionCount">
+0
+</strong>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- TASKS -->
+
+<div id="tasks"
+     class="section">
+
+<div class="card">
+
+<h2>📋 Create Task</h2>
+
+<label>Task Title</label>
+
+<input
+ id="taskTitle"
+ placeholder="Task title">
+
+<label>Description</label>
+
+<textarea
+ id="taskDescription"
+ placeholder="Task description"></textarea>
+
+<label>Reward</label>
+
+<input
+ id="taskReward"
+ type="number"
+ placeholder="100">
+
+<button
+ class="primary"
+ onclick="createTask()">
+ Create Task
+</button>
+
+<div id="taskMessage"></div>
+
+</div>
+
+
+<div class="card">
+
+<h2>Existing Tasks</h2>
+
+<div id="taskList">
+Loading...
+</div>
+
+</div>
+
+</div>
+
+
+<!-- SUBMISSIONS -->
+
+<div id="submissions"
+     class="section">
+
+<div class="card">
+
+<h2>📝 Pending Task Submissions</h2>
+
+<div id="submissionList">
+Loading...
+</div>
+
+</div>
+
+</div>
+
+
+<!-- DEPOSITS -->
+
+<div id="deposits"
+     class="section">
+
+<div class="card">
+
+<h2>💰 Pending Deposits</h2>
+
+<div id="depositList">
+Loading...
+</div>
+
+</div>
+
+</div>
+
+
+<!-- WITHDRAWALS -->
+
+<div id="withdrawals"
+     class="section">
+
+<div class="card">
+
+<h2>💸 Pending Withdrawals</h2>
+
+<div id="withdrawalList">
+Loading...
+</div>
+
+</div>
+
+</div>
+
+
+<!-- USERS -->
+
+<div id="users"
+     class="section">
+
+<div class="card">
+
+<h2>👥 Users</h2>
+
+<div id="userList">
+Loading...
+</div>
+
+</div>
+
+</div>
+
+
+<!-- SETTINGS -->
+
+<div id="settings"
+     class="section">
+
+<div class="card">
+
+<h2>🏦 Payment Details</h2>
+
+<label>Bank Name</label>
+
+<input id="settingBank">
+
+<label>Account Name</label>
+
+<input id="settingName">
+
+<label>Account Number</label>
+
+<input id="settingNumber">
+
+<button
+ class="primary"
+ onclick="saveSettings()">
+ Save Payment Details
+</button>
+
+<div id="settingsMessage"></div>
+
+</div>
+
+</div>
 
 </div>
 
@@ -495,209 +501,154 @@ supabase.createClient(
   SUPABASE_KEY
 );
 
-let adminUser = null;
+let adminUser=null;
 
 
-// -------------------------
+// ===========================
 // LOGIN
-// -------------------------
+// ===========================
 
-async function login() {
+async function adminLogin(){
 
-  const email =
-    document.getElementById("email").value.trim();
+  const email=
+    document.getElementById("adminEmail")
+    .value.trim();
 
-  const password =
-    document.getElementById("password").value;
+  const password=
+    document.getElementById("adminPassword")
+    .value;
 
-  const message =
+  const message=
     document.getElementById("loginMessage");
 
-  if (!email || !password) {
 
-    message.innerHTML =
-      '<span class="error">Enter your email and password.</span>';
-
-    return;
-  }
-
-  const { data, error } =
-    await supabaseClient.auth.signInWithPassword({
+  const {data,error}=
+    await supabaseClient.auth
+    .signInWithPassword({
       email,
       password
     });
 
-  if (error) {
 
-    message.innerHTML =
-      `<span class="error">${escapeHTML(error.message)}</span>`;
+  if(error){
+
+    message.innerHTML=
+      `<p class="error">${escapeHTML(error.message)}</p>`;
 
     return;
   }
 
-  adminUser = data.user;
-console.log("Logged in user:", data.user);
-  const { data: profile, error: profileError } =
-    await supabaseClient
-      .from("profiles")
-      .select("role")
-      .eq("id", adminUser.id)
-      .single();
 
-  if (profileError || !profile || profile.role !== "admin") {
+  adminUser=data.user;
+
+  await checkAdmin();
+
+}
+
+
+// ===========================
+// CHECK ADMIN
+// ===========================
+
+async function checkAdmin(){
+
+  const {data,error}=
+    await supabaseClient
+    .from("profiles")
+    .select("role")
+    .eq("id",adminUser.id)
+    .single();
+
+
+  if(error){
+
+    alert(error.message);
 
     await supabaseClient.auth.signOut();
 
-    message.innerHTML =
-      '<span class="error">This account is not an administrator.</span>';
+    return;
+  }
+
+
+  if(data.role!=="admin"){
+
+    alert("This account does not have administrator access.");
+
+    await supabaseClient.auth.signOut();
 
     return;
   }
 
+
   document
-    .getElementById("loginBox")
+    .getElementById("loginPage")
     .classList.add("hidden");
 
   document
     .getElementById("adminApp")
     .classList.remove("hidden");
 
-  await loadEverything();
-}
 
+  loadDashboard();
 
-// -------------------------
-// LOAD EVERYTHING
-// -------------------------
-
-async function loadEverything() {
-
-  await loadDashboard();
-  await loadUsers();
-  await loadActivations();
-  await loadTasks();
-  await loadDeposits();
-  await loadWithdrawals();
-  await loadTransactions();
-  await loadSettings();
+  loadTasks();
 
 }
 
 
-// -------------------------
+// ===========================
 // DASHBOARD
-// -------------------------
+// ===========================
 
-async function loadDashboard() {
+async function loadDashboard(){
 
-  const { data: users } =
+  const users=
     await supabaseClient
-      .from("profiles")
-      .select("id,is_activated");
+    .from("profiles")
+    .select("id",{
+      count:"exact",
+      head:true
+    });
 
-  const { data: deposits } =
+
+  const deposits=
     await supabaseClient
-      .from("deposits")
-      .select("id")
-      .eq("status", "pending");
+    .from("deposits")
+    .select("id",{
+      count:"exact",
+      head:true
+    })
+    .eq("status","pending");
 
-  const { data: withdrawals } =
+
+  const withdrawals=
     await supabaseClient
-      .from("withdrawals")
-      .select("id")
-      .eq("status", "pending");
-
-  document.getElementById("totalUsers").textContent =
-    users ? users.length : 0;
-
-  document.getElementById("inactiveUsers").textContent =
-    users
-      ? users.filter(u => !u.is_activated).length
-      : 0;
-
-  document.getElementById("pendingDeposits").textContent =
-    deposits ? deposits.length : 0;
-
-  document.getElementById("pendingWithdrawals").textContent =
-    withdrawals ? withdrawals.length : 0;
-}
+    .from("withdrawals")
+    .select("id",{
+      count:"exact",
+      head:true
+    })
+    .eq("status","pending");
 
 
-// -------------------------
-// USERS
-// -------------------------
-
-async function loadUsers() {
-
-  const { data, error } =
+  const submissions=
     await supabaseClient
-      .from("profiles")
-      .select("*")
-      .order("created_at", {
-        ascending: false
-      });
+    .from("task_submissions")
+    .select("id",{
+      count:"exact",
+      head:true
+    })
+    .eq("status","pending");
 
-  const list =
-    document.getElementById("usersList");
 
-  if (error) {
+  document.getElementById("userCount")
+    .textContent=users.count || 0;
 
-    list.innerHTML =
-      `<span class="error">${escapeHTML(error.message)}</span>`;
+  document.getElementById("depositCount")
+    .textContent=deposits.count || 0;
 
-    return;
-  }
+  document.getElementById("withdrawCount")
+    .textContent=withdrawals.count || 0;
 
-  if (!data || data.length === 0) {
-
-    list.textContent = "No users.";
-
-    return;
-  }
-
-  list.innerHTML = "";
-
-  data.forEach(user => {
-
-    const div =
-      document.createElement("div");
-
-    div.className = "item";
-
-    div.innerHTML = `
-      <strong>${escapeHTML(user.full_name || "No name")}</strong>
-
-      <p>
-        Username:
-        ${escapeHTML(user.username || "-")}
-      </p>
-
-      <p>
-        Balance:
-        ₦${Number(user.balance || 0).toLocaleString()}
-      </p>
-
-      <p>
-        Status:
-        ${user.is_activated ? "Activated" : "Inactive"}
-      </p>
-
-      <p>
-        Role:
-        ${escapeHTML(user.role || "user")}
-      </p>
-
-      ${
-        user.role !== "admin"
-        ?
-        `<button class="primary"
-                 onclick="activateUser('${user.id}')">
-          Activate
-        </button>`
-        :
-        ""
-      }
-    `;
-
-    list.appendChild(div);
- 
+  document.getElementById("submissionCount")
+   
