@@ -232,6 +232,10 @@
       <button class="gray" onclick="showSection('tasks')">
         📋 Tasks
       </button>
+      
+      <button class="gray" onclick="showSection('submissions'); loadSubmissions()">
+  📝 Submissions
+      </button>
 
       <button class="gray" onclick="showSection('deposits')">
         💰 Deposits
@@ -321,7 +325,22 @@
 
     </div>
 
+<!-- TASK SUBMISSIONS -->
+<div id="submissions" class="section">
 
+  <div class="card">
+
+    <h2>📝 Task Submissions</h2>
+
+    <br>
+
+    <div id="submissionsList">
+      Loading...
+    </div>
+
+  </div>
+
+</div>
     <!-- TASKS -->
     <div id="tasks" class="section">
 
