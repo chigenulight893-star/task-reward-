@@ -536,7 +536,7 @@ async function login() {
   }
 
   adminUser = data.user;
-
+console.log("Logged in user:", data.user);
   const { data: profile, error: profileError } =
     await supabaseClient
       .from("profiles")
