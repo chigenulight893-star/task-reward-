@@ -71,8 +71,7 @@
     }
 
     input,
-    textarea,
-    select {
+    textarea {
       width: 100%;
       padding: 12px;
       margin-top: 8px;
@@ -116,11 +115,6 @@
     .warning {
       background: #fff1c9;
       color: #806000;
-    }
-
-    .dark {
-      background: #17201d;
-      color: white;
     }
 
     .secondary {
@@ -211,7 +205,7 @@
     .muted {
       color: #66736e;
       font-size: 14px;
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
     .actions {
@@ -252,6 +246,11 @@
       color: #b42318;
     }
 
+    a {
+      color: #087f5b;
+      font-weight: bold;
+    }
+
     @media (max-width: 750px) {
       .stats {
         grid-template-columns: 1fr 1fr;
@@ -272,7 +271,9 @@
 
 <body>
 
-<!-- ADMIN LOGIN -->
+<!-- =========================
+     LOGIN
+========================= -->
 
 <div id="loginPage" class="login">
 
@@ -285,6 +286,7 @@
     </p>
 
     <label>Email</label>
+
     <input
       id="adminEmail"
       type="email"
@@ -292,6 +294,7 @@
     >
 
     <label>Password</label>
+
     <input
       id="adminPassword"
       type="password"
@@ -312,7 +315,9 @@
 </div>
 
 
-<!-- ADMIN APP -->
+<!-- =========================
+     ADMIN APP
+========================= -->
 
 <div id="adminApp" class="container hidden">
 
@@ -320,11 +325,10 @@
 
     <h1>TaskReward Admin</h1>
 
-    <p>
-      Administrator Dashboard
-    </p>
+    <p>Administrator Dashboard</p>
 
   </header>
+
 
   <div class="content">
 
@@ -385,7 +389,9 @@
     </div>
 
 
-    <!-- OVERVIEW -->
+    <!-- =========================
+         OVERVIEW
+    ========================= -->
 
     <section
       id="overview"
@@ -411,18 +417,21 @@
 
         <div class="stat">
           <small>Total Balance</small>
-          <h2>₦<span id="totalBalance">0.00</span></h2>
+          <h2>
+            ₦<span id="totalBalance">0.00</span>
+          </h2>
         </div>
 
       </div>
+
 
       <div class="card">
 
         <h3>Welcome, Administrator</h3>
 
         <p class="muted">
-          Use the menu above to manage users, tasks,
-          deposits, withdrawals and task submissions.
+          Manage tasks, users, task approvals,
+          deposits and withdrawals from this dashboard.
         </p>
 
       </div>
@@ -430,7 +439,9 @@
     </section>
 
 
-    <!-- TASK MANAGEMENT -->
+    <!-- =========================
+         TASKS
+    ========================= -->
 
     <section
       id="tasks"
@@ -489,7 +500,9 @@
     </section>
 
 
-    <!-- APPROVALS -->
+    <!-- =========================
+         TASK APPROVALS
+    ========================= -->
 
     <section
       id="approvals"
@@ -501,8 +514,8 @@
         <h3>✅ Task Approvals</h3>
 
         <p class="muted">
-          Select pending submissions for bulk processing,
-          or approve/reject them individually.
+          Approve submissions manually or select
+          several submissions for bulk approval.
         </p>
 
         <div class="actions">
@@ -548,7 +561,9 @@
     </section>
 
 
-    <!-- USERS -->
+    <!-- =========================
+         USERS
+    ========================= -->
 
     <section
       id="users"
@@ -562,7 +577,7 @@
         <input
           id="userSearch"
           type="text"
-          placeholder="Search by name or email"
+          placeholder="Search users"
           oninput="filterUsers()"
         >
 
@@ -575,7 +590,9 @@
     </section>
 
 
-    <!-- DEPOSITS -->
+    <!-- =========================
+         DEPOSITS
+    ========================= -->
 
     <section
       id="deposits"
@@ -584,7 +601,12 @@
 
       <div class="card">
 
-        <h3>💳 Deposits</h3>
+        <h3>💳 Deposit Management</h3>
+
+        <p class="muted">
+          Verify the payment proof before approving a deposit.
+          Approved deposits are automatically added to the user's balance.
+        </p>
 
         <div id="depositList">
           Loading deposits...
@@ -595,7 +617,9 @@
     </section>
 
 
-    <!-- WITHDRAWALS -->
+    <!-- =========================
+         WITHDRAWALS
+    ========================= -->
 
     <section
       id="withdrawals"
@@ -615,7 +639,9 @@
     </section>
 
 
-    <!-- SETTINGS -->
+    <!-- =========================
+         SETTINGS
+    ========================= -->
 
     <section
       id="settings"
@@ -670,9 +696,9 @@
 
 <script>
 
-/* ===========================
+/* =========================
    SUPABASE
-=========================== */
+========================= */
 
 const SUPABASE_URL =
 "https://ztvliwkztcxmdoidowxn.supabase.co";
@@ -688,12 +714,11 @@ supabase.createClient(
 
 let adminUser = null;
 let allUsers = [];
-let selectedApprovals = new Set();
 
 
-/* ===========================
+/* =========================
    LOGIN
-=========================== */
+========================= */
 
 async function adminLogin() {
 
@@ -720,8 +745,8 @@ async function adminLogin() {
 
   const { data, error } =
     await supabaseClient.auth.signInWithPassword({
-      email,
-      password
+      email: email,
+      password: password
     });
 
   if (error) {
@@ -737,11 +762,15 @@ async function adminLogin() {
   const { data: profile, error: profileError } =
     await supabaseClient
       .from("profiles")
-      .select("id,is_admin,full_name")
+      .select("id,is_admin")
       .eq("id", user.id)
       .single();
 
-  if (profileError || !profile || profile.is_admin !== true) {
+  if (
+    profileError ||
+    !profile ||
+    profile.is_admin !== true
+  ) {
 
     await supabaseClient.auth.signOut();
 
@@ -765,17 +794,18 @@ async function adminLogin() {
 }
 
 
-/* ===========================
-   SESSION CHECK
-=========================== */
+/* =========================
+   SESSION
+========================= */
 
 async function checkAdminSession() {
 
   const { data } =
     await supabaseClient.auth.getSession();
 
-  if (!data.session)
+  if (!data.session) {
     return;
+  }
 
   const user =
     data.session.user;
@@ -783,7 +813,7 @@ async function checkAdminSession() {
   const { data: profile } =
     await supabaseClient
       .from("profiles")
-      .select("id,is_admin,full_name")
+      .select("id,is_admin")
       .eq("id", user.id)
       .single();
 
@@ -808,9 +838,9 @@ async function checkAdminSession() {
 }
 
 
-/* ===========================
+/* =========================
    LOAD EVERYTHING
-=========================== */
+========================= */
 
 async function loadEverything() {
 
@@ -820,14 +850,13 @@ async function loadEverything() {
   await loadUsers();
   await loadDeposits();
   await loadWithdrawals();
-  await loadSettings();
 
 }
 
 
-/* ===========================
+/* =========================
    OVERVIEW
-=========================== */
+========================= */
 
 async function loadOverview() {
 
@@ -836,8 +865,9 @@ async function loadOverview() {
       .from("profiles")
       .select("balance,is_activated");
 
-  if (!users)
+  if (!users) {
     return;
+  }
 
   document.getElementById("totalUsers")
     .textContent = users.length;
@@ -848,16 +878,16 @@ async function loadOverview() {
         user => user.is_activated === true
       ).length;
 
-  const balance =
+  const total =
     users.reduce(
-      (total, user) =>
-        total + Number(user.balance || 0),
+      (sum, user) =>
+        sum + Number(user.balance || 0),
       0
     );
 
   document.getElementById("totalBalance")
     .textContent =
-      balance.toLocaleString(
+      total.toLocaleString(
         "en-NG",
         {
           minimumFractionDigits: 2
@@ -876,11 +906,14 @@ async function loadOverview() {
 }
 
 
-/* ===========================
+/* =========================
    TASKS
-=========================== */
+========================= */
 
 async function loadTasks() {
+
+  const list =
+    document.getElementById("adminTaskList");
 
   const { data, error } =
     await supabaseClient
@@ -889,9 +922,6 @@ async function loadTasks() {
       .order("id", {
         ascending: false
       });
-
-  const list =
-    document.getElementById("adminTaskList");
 
   if (error) {
 
@@ -919,7 +949,10 @@ async function loadTasks() {
     row.className = "row";
 
     row.innerHTML = `
-      <h4>${escapeHTML(task.title)}</h4>
+
+      <h4>
+        ${escapeHTML(task.title)}
+      </h4>
 
       <p class="muted">
         ${escapeHTML(task.description || "")}
@@ -927,24 +960,25 @@ async function loadTasks() {
 
       <p class="muted">
         Reward:
-        <strong>₦${Number(task.reward || 0).toLocaleString()}</strong>
+        <strong>
+          ₦${Number(task.reward || 0).toLocaleString()}
+        </strong>
       </p>
 
       <p class="muted">
         Active:
-        <strong>${task.active ? "Yes" : "No"}</strong>
+        <strong>
+          ${task.active ? "Yes" : "No"}
+        </strong>
       </p>
 
-      <div class="actions">
+      <button
+        class="${task.active ? "warning" : "primary"}"
+        onclick="toggleTask(${task.id}, ${task.active})"
+      >
+        ${task.active ? "Deactivate" : "Activate"}
+      </button>
 
-        <button
-          class="${task.active ? "warning" : "primary"}"
-          onclick="toggleTask(${task.id}, ${task.active})"
-        >
-          ${task.active ? "Deactivate" : "Activate"}
-        </button>
-
-      </div>
     `;
 
     list.appendChild(row);
@@ -964,13 +998,19 @@ async function createTask() {
 
   const reward =
     Number(
-      document.getElementById("taskReward").value
+      document.getElementById("taskReward")
+        .value
     );
 
   const message =
     document.getElementById("taskMessage");
 
-  if (!title || !description || !reward || reward <= 0) {
+  if (
+    !title ||
+    !description ||
+    !reward ||
+    reward <= 0
+  ) {
 
     message.innerHTML =
       '<p class="error">Fill all task fields correctly.</p>';
@@ -982,9 +1022,9 @@ async function createTask() {
     await supabaseClient
       .from("tasks")
       .insert({
-        title,
-        description,
-        reward,
+        title: title,
+        description: description,
+        reward: reward,
         active: true,
         status: "active"
       });
@@ -1010,12 +1050,15 @@ async function createTask() {
 
 async function toggleTask(id, currentState) {
 
+  const newState =
+    !currentState;
+
   const { error } =
     await supabaseClient
       .from("tasks")
       .update({
-        active: !currentState,
-        status: !currentState
+        active: newState,
+        status: newState
           ? "active"
           : "inactive"
       })
@@ -1032,9 +1075,9 @@ async function toggleTask(id, currentState) {
 }
 
 
-/* ===========================
-   APPROVALS
-=========================== */
+/* =========================
+   TASK APPROVALS
+========================= */
 
 async function loadApprovals() {
 
@@ -1089,12 +1132,15 @@ async function loadApprovals() {
     row.className = "row";
 
     const name =
-      item.profiles?.full_name || "Unknown user";
+      item.profiles?.full_name ||
+      "Unknown user";
 
     const task =
-      item.tasks?.title || "Unknown task";
+      item.tasks?.title ||
+      "Unknown task";
 
     row.innerHTML = `
+
       <label style="margin-top:0">
 
         <input
@@ -1103,19 +1149,24 @@ async function loadApprovals() {
           value="${item.id}"
         >
 
-        Select this submission
+        Select submission
 
       </label>
 
-      <h4>${escapeHTML(task)}</h4>
+      <h4>
+        ${escapeHTML(task)}
+      </h4>
 
       <p class="muted">
-        User: ${escapeHTML(name)}
+        User:
+        ${escapeHTML(name)}
       </p>
 
       <p class="muted">
         Reward:
-        <strong>₦${Number(item.reward || 0).toLocaleString()}</strong>
+        <strong>
+          ₦${Number(item.reward || 0).toLocaleString()}
+        </strong>
       </p>
 
       <p class="muted">
@@ -1140,6 +1191,7 @@ async function loadApprovals() {
         </button>
 
       </div>
+
     `;
 
     list.appendChild(row);
@@ -1147,778 +1199,17 @@ async function loadApprovals() {
 }
 
 
-/*
-  IMPORTANT:
-  The functions below currently mark the
-  completion status only.
-
-  We will connect the actual balance-crediting
-  database function after the database function
-  is successfully created and tested.
-*/
-
 async function manualApprove(id) {
 
   if (!confirm(
     "Approve this task submission?"
-  ))
+  )) {
     return;
-
-  const message =
-    document.getElementById("approvalMessage");
+  }
 
   const { error } =
     await supabaseClient
       .from("task_completions")
       .update({
         status: "approved",
-        approved_at: new Date().toISOString()
-      })
-      .eq("id", id)
-      .eq("status", "pending");
-
-  if (error) {
-
-    message.innerHTML =
-      `<p class="error">${escapeHTML(error.message)}</p>`;
-
-    return;
-  }
-
-  message.innerHTML =
-    '<p class="success">Submission approved.</p>';
-
-  await loadApprovals();
-  await loadOverview();
-}
-
-
-async function manualReject(id) {
-
-  if (!confirm(
-    "Reject this task submission?"
-  ))
-    return;
-
-  const message =
-    document.getElementById("approvalMessage");
-
-  const { error } =
-    await supabaseClient
-      .from("task_completions")
-      .update({
-        status: "rejected"
-      })
-      .eq("id", id)
-      .eq("status", "pending");
-
-  if (error) {
-
-    message.innerHTML =
-      `<p class="error">${escapeHTML(error.message)}</p>`;
-
-    return;
-  }
-
-  message.innerHTML =
-    '<p class="success">Submission rejected.</p>';
-
-  await loadApprovals();
-  await loadOverview();
-}
-
-
-function getSelectedApprovals() {
-
-  return Array
-    .from(
-      document.querySelectorAll(
-        ".approvalCheck:checked"
-      )
-    )
-    .map(
-      checkbox => checkbox.value
-    );
-}
-
-
-function selectAllPending() {
-
-  const boxes =
-    document.querySelectorAll(
-      ".approvalCheck"
-    );
-
-  boxes.forEach(
-    checkbox => {
-      checkbox.checked = true;
-    }
-  );
-}
-
-
-async function bulkApprove() {
-
-  const ids =
-    getSelectedApprovals();
-
-  if (ids.length === 0) {
-
-    alert(
-      "Select at least one pending submission."
-    );
-
-    return;
-  }
-
-  if (!confirm(
-    `Approve ${ids.length} selected submission(s)?`
-  ))
-    return;
-
-  const message =
-    document.getElementById("approvalMessage");
-
-  for (const id of ids) {
-
-    const { error } =
-      await supabaseClient
-        .from("task_completions")
-        .update({
-          status: "approved",
-          approved_at:
-            new Date().toISOString()
-        })
-        .eq("id", id)
-        .eq("status", "pending");
-
-    if (error) {
-
-      message.innerHTML =
-        `<p class="error">${escapeHTML(error.message)}</p>`;
-
-      return;
-    }
-  }
-
-  message.innerHTML =
-    `<p class="success">${ids.length} submissions approved.</p>`;
-
-  await loadApprovals();
-  await loadOverview();
-}
-
-
-async function bulkReject() {
-
-  const ids =
-    getSelectedApprovals();
-
-  if (ids.length === 0) {
-
-    alert(
-      "Select at least one pending submission."
-    );
-
-    return;
-  }
-
-  if (!confirm(
-    `Reject ${ids.length} selected submission(s)?`
-  ))
-    return;
-
-  const message =
-    document.getElementById("approvalMessage");
-
-  for (const id of ids) {
-
-    const { error } =
-      await supabaseClient
-        .from("task_completions")
-        .update({
-          status: "rejected"
-        })
-        .eq("id", id)
-        .eq("status", "pending");
-
-    if (error) {
-
-      message.innerHTML =
-        `<p class="error">${escapeHTML(error.message)}</p>`;
-
-      return;
-    }
-  }
-
-  message.innerHTML =
-    `<p class="success">${ids.length} submissions rejected.</p>`;
-
-  await loadApprovals();
-  await loadOverview();
-}
-
-
-/* ===========================
-   USERS
-=========================== */
-
-async function loadUsers() {
-
-  const { data, error } =
-    await supabaseClient
-      .from("profiles")
-      .select("*")
-      .order("full_name");
-
-  const list =
-    document.getElementById("userList");
-
-  if (error) {
-
-    list.innerHTML =
-      `<p class="error">${escapeHTML(error.message)}</p>`;
-
-    return;
-  }
-
-  allUsers = data || [];
-
-  renderUsers(allUsers);
-}
-
-
-function renderUsers(users) {
-
-  const list =
-    document.getElementById("userList");
-
-  if (!users.length) {
-
-    list.innerHTML =
-      "<p>No users found.</p>";
-
-    return;
-  }
-
-  list.innerHTML = "";
-
-  users.forEach(user => {
-
-    const row =
-      document.createElement("div");
-
-    row.className = "row";
-
-    row.innerHTML = `
-      <h4>${escapeHTML(user.full_name || "User")}</h4>
-
-      <p class="muted">
-        User ID: ${escapeHTML(user.id)}
-      </p>
-
-      <p class="muted">
-        Balance:
-        <strong>
-          ₦${Number(user.balance || 0).toLocaleString()}
-        </strong>
-      </p>
-
-      <p class="muted">
-        Activated:
-        <strong>
-          ${user.is_activated ? "Yes" : "No"}
-        </strong>
-      </p>
-
-      <p class="muted">
-        Admin:
-        <strong>
-          ${user.is_admin ? "Yes" : "No"}
-        </strong>
-      </p>
-    `;
-
-    list.appendChild(row);
-  });
-}
-
-
-function filterUsers() {
-
-  const search =
-    document.getElementById("userSearch")
-      .value
-      .toLowerCase();
-
-  const filtered =
-    allUsers.filter(user =>
-      String(user.full_name || "")
-        .toLowerCase()
-        .includes(search)
-      ||
-      String(user.id || "")
-        .toLowerCase()
-        .includes(search)
-    );
-
-  renderUsers(filtered);
-}
-
-
-/* ===========================
-   DEPOSITS
-=========================== */
-
-async function loadDeposits() {
-
-  const list =
-    document.getElementById("depositList");
-
-  const { data, error } =
-    await supabaseClient
-      .from("deposits")
-      .select("*")
-      .order("id", {
-        ascending: false
-      });
-
-  if (error) {
-    list.innerHTML =
-      `<p class="error">${escapeHTML(error.message)}</p>`;
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    list.innerHTML =
-      "<p>No deposits found.</p>";
-    return;
-  }
-
-  list.innerHTML = "";
-
-  data.forEach(deposit => {
-
-    const row =
-      document.createElement("div");
-
-    row.className = "row";
-
-    const status =
-      String(deposit.status || "pending").toLowerCase();
-
-    let actionButtons = "";
-
-    if (status === "pending") {
-
-      actionButtons = `
-        <div class="actions">
-
-          <button
-            class="primary"
-            onclick="approveDeposit(${deposit.id})"
-          >
-            Approve
-          </button>
-
-          <button
-            class="danger"
-            onclick="rejectDeposit(${deposit.id})"
-          >
-            Reject
-          </button>
-
-        </div>
-      `;
-
-    } else {
-
-      actionButtons = `
-        <span class="status ${status}">
-          ${escapeHTML(status)}
-        </span>
-      `;
-    }
-
-    row.innerHTML = `
-      <h4>
-        Deposit #${escapeHTML(deposit.id)}
-      </h4>
-
-      <p class="muted">
-        User:
-        ${escapeHTML(deposit.user_id)}
-      </p>
-
-      <p class="muted">
-        Amount:
-        <strong>
-          ₦${Number(deposit.amount || 0).toLocaleString(
-            "en-NG",
-            { minimumFractionDigits: 2 }
-          )}
-        </strong>
-      </p>
-
-      <p class="muted">
-        Reference:
-        ${escapeHTML(deposit.reference || "None")}
-      </p>
-
-      ${
-        deposit.proof_of_url
-          ? `
-            <p class="muted">
-              Proof:
-              <a
-                href="${escapeHTML(deposit.proof_of_url)}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View payment proof
-              </a>
-            </p>
-          `
-          : ""
-      }
-
-      <p class="muted">
-        Date:
-        ${new Date(deposit.created_at).toLocaleString()}
-      </p>
-
-      ${actionButtons}
-    `;
-
-    list.appendChild(row);
-  });
-}
-
-
-/* ===========================
-   APPROVE DEPOSIT
-=========================== */
-
-async function approveDeposit(depositId) {
-
-  if (!confirm(
-    "Approve this deposit and credit the user's balance?"
-  )) {
-    return;
-  }
-
-  const { data, error } =
-    await supabaseClient.rpc(
-      "approve_deposit",
-      {
-        p_deposit_id: depositId
-      }
-    );
-
-  if (error) {
-
-    alert(
-      "Approval failed: " +
-      error.message
-    );
-
-    return;
-  }
-
-  alert(
-    "Deposit approved successfully. The user's balance has been credited."
-  );
-
-  await loadDeposits();
-  await loadOverview();
-}
-
-
-/* ===========================
-   REJECT DEPOSIT
-=========================== */
-
-async function rejectDeposit(depositId) {
-
-  if (!confirm(
-    "Reject this deposit?"
-  )) {
-    return;
-  }
-
-  const { error } =
-    await supabaseClient
-      .from("deposits")
-      .update({
-        status: "rejected"
-      })
-      .eq("id", depositId)
-      .eq("status", "pending");
-
-  if (error) {
-
-    alert(
-      "Rejection failed: " +
-      error.message
-    );
-
-    return;
-  }
-
-  alert(
-    "Deposit rejected."
-  );
-
-  await loadDeposits();
-  await loadOverview();
-}
-   WITHDRAWALS
-=========================== */
-
-async function loadWithdrawals() {
-
-  const list =
-    document.getElementById("withdrawalList");
-
-  const { data, error } =
-    await supabaseClient
-      .from("withdrawals")
-      .select("*")
-      .order("id", {
-        ascending: false
-      });
-
-  if (error) {
-
-    list.innerHTML =
-      `<p class="error">${escapeHTML(error.message)}</p>`;
-
-    return;
-  }
-
-  if (!data || data.length === 0) {
-
-    list.innerHTML =
-      "<p>No withdrawal requests found.</p>";
-
-    return;
-  }
-
-  list.innerHTML = "";
-
-  data.forEach(withdrawal => {
-
-    const row =
-      document.createElement("div");
-
-    row.className = "row";
-
-    row.innerHTML = `
-      <h4>
-        Withdrawal #${escapeHTML(withdrawal.id)}
-      </h4>
-
-      <p class="muted">
-        User: ${escapeHTML(withdrawal.user_id)}
-      </p>
-
-      <p class="muted">
-        Amount:
-        <strong>
-          ₦${Number(withdrawal.amount || 0).toLocaleString()}
-        </strong>
-      </p>
-
-      <p class="muted">
-        Bank:
-        ${escapeHTML(withdrawal.bank_name || "")}
-      </p>
-
-      <p class="muted">
-        Account:
-        ${escapeHTML(withdrawal.account_name || "")}
-      </p>
-
-      <p class="muted">
-        Account Number:
-        ${escapeHTML(withdrawal.account_number || "")}
-      </p>
-    `;
-
-    list.appendChild(row);
-  });
-}
-
-
-/* ===========================
-   SETTINGS
-=========================== */
-
-async function loadSettings() {
-
-  const { data, error } =
-    await supabaseClient
-      .from("admin_settings")
-      .select("*")
-      .limit(1)
-      .single();
-
-  if (error || !data)
-    return;
-
-  document.getElementById("settingsBank")
-    .value =
-      data.bank_name || "";
-
-  document.getElementById("settingsName")
-    .value =
-      data.account_name || "";
-
-  document.getElementById("settingsNumber")
-    .value =
-      data.account_number || "";
-}
-
-
-async function saveSettings() {
-
-  const bank =
-    document.getElementById("settingsBank")
-      .value.trim();
-
-  const name =
-    document.getElementById("settingsName")
-      .value.trim();
-
-  const number =
-    document.getElementById("settingsNumber")
-      .value.trim();
-
-  const message =
-    document.getElementById("settingsMessage");
-
-  const { data: existing } =
-    await supabaseClient
-      .from("admin_settings")
-      .select("id")
-      .limit(1)
-      .maybeSingle();
-
-  let result;
-
-  if (existing) {
-
-    result =
-      await supabaseClient
-        .from("admin_settings")
-        .update({
-          bank_name: bank,
-          account_name: name,
-          account_number: number
-        })
-        .eq("id", existing.id);
-
-  } else {
-
-    result =
-      await supabaseClient
-        .from("admin_settings")
-        .insert({
-          bank_name: bank,
-          account_name: name,
-          account_number: number
-        });
-  }
-
-  if (result.error) {
-
-    message.innerHTML =
-      `<p class="error">${escapeHTML(result.error.message)}</p>`;
-
-    return;
-  }
-
-  message.innerHTML =
-    '<p class="success">Payment settings saved.</p>';
-}
-
-
-/* ===========================
-   NAVIGATION
-=========================== */
-
-function showSection(id, button) {
-
-  document
-    .querySelectorAll(".section")
-    .forEach(section =>
-      section.classList.remove("active")
-    );
-
-  document
-    .getElementById(id)
-    .classList.add("active");
-
-  document
-    .querySelectorAll(".nav button")
-    .forEach(btn =>
-      btn.classList.remove("active")
-    );
-
-  if (button)
-    button.classList.add("active");
-
-  if (id === "approvals")
-    loadApprovals();
-
-  if (id === "users")
-    loadUsers();
-
-  if (id === "tasks")
-    loadTasks();
-
-  if (id === "deposits")
-    loadDeposits();
-
-  if (id === "withdrawals")
-    loadWithdrawals();
-}
-
-
-/* ===========================
-   LOGOUT
-=========================== */
-
-async function adminLogout() {
-
-  await supabaseClient.auth.signOut();
-
-  location.reload();
-}
-
-
-/* ===========================
-   HTML SECURITY
-=========================== */
-
-function escapeHTML(value) {
-
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-
-/* ===========================
-   START
-=========================== */
-
-checkAdminSession();
-
-</script>
-
-</body>
-</html>
+   
