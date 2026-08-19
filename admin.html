@@ -1484,18 +1484,14 @@ async function loadDeposits() {
       });
 
   if (error) {
-
     list.innerHTML =
       `<p class="error">${escapeHTML(error.message)}</p>`;
-
     return;
   }
 
   if (!data || data.length === 0) {
-
     list.innerHTML =
       "<p>No deposits found.</p>";
-
     return;
   }
 
@@ -1508,19 +1504,59 @@ async function loadDeposits() {
 
     row.className = "row";
 
+    const status =
+      String(deposit.status || "pending").toLowerCase();
+
+    let actionButtons = "";
+
+    if (status === "pending") {
+
+      actionButtons = `
+        <div class="actions">
+
+          <button
+            class="primary"
+            onclick="approveDeposit(${deposit.id})"
+          >
+            Approve
+          </button>
+
+          <button
+            class="danger"
+            onclick="rejectDeposit(${deposit.id})"
+          >
+            Reject
+          </button>
+
+        </div>
+      `;
+
+    } else {
+
+      actionButtons = `
+        <span class="status ${status}">
+          ${escapeHTML(status)}
+        </span>
+      `;
+    }
+
     row.innerHTML = `
       <h4>
         Deposit #${escapeHTML(deposit.id)}
       </h4>
 
       <p class="muted">
-        User: ${escapeHTML(deposit.user_id)}
+        User:
+        ${escapeHTML(deposit.user_id)}
       </p>
 
       <p class="muted">
         Amount:
         <strong>
-          ₦${Number(deposit.amount || 0).toLocaleString()}
+          ₦${Number(deposit.amount || 0).toLocaleString(
+            "en-NG",
+            { minimumFractionDigits: 2 }
+          )}
         </strong>
       </p>
 
@@ -1528,6 +1564,30 @@ async function loadDeposits() {
         Reference:
         ${escapeHTML(deposit.reference || "None")}
       </p>
+
+      ${
+        deposit.proof_of_url
+          ? `
+            <p class="muted">
+              Proof:
+              <a
+                href="${escapeHTML(deposit.proof_of_url)}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View payment proof
+              </a>
+            </p>
+          `
+          : ""
+      }
+
+      <p class="muted">
+        Date:
+        ${new Date(deposit.created_at).toLocaleString()}
+      </p>
+
+      ${actionButtons}
     `;
 
     list.appendChild(row);
@@ -1536,6 +1596,82 @@ async function loadDeposits() {
 
 
 /* ===========================
+   APPROVE DEPOSIT
+=========================== */
+
+async function approveDeposit(depositId) {
+
+  if (!confirm(
+    "Approve this deposit and credit the user's balance?"
+  )) {
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "approve_deposit",
+      {
+        p_deposit_id: depositId
+      }
+    );
+
+  if (error) {
+
+    alert(
+      "Approval failed: " +
+      error.message
+    );
+
+    return;
+  }
+
+  alert(
+    "Deposit approved successfully. The user's balance has been credited."
+  );
+
+  await loadDeposits();
+  await loadOverview();
+}
+
+
+/* ===========================
+   REJECT DEPOSIT
+=========================== */
+
+async function rejectDeposit(depositId) {
+
+  if (!confirm(
+    "Reject this deposit?"
+  )) {
+    return;
+  }
+
+  const { error } =
+    await supabaseClient
+      .from("deposits")
+      .update({
+        status: "rejected"
+      })
+      .eq("id", depositId)
+      .eq("status", "pending");
+
+  if (error) {
+
+    alert(
+      "Rejection failed: " +
+      error.message
+    );
+
+    return;
+  }
+
+  alert(
+    "Deposit rejected."
+  );
+
+  await loadDeposits();
+  await loadOverview();
+}
    WITHDRAWALS
 =========================== */
 
