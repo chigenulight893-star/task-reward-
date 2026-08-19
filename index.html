@@ -823,80 +823,83 @@ await loadDashboard();
 // LOAD DASHBOARD
 // ===========================
 
-async function loadDashboard(){
 
-const {data:profile,error}=
-await supabaseClient
-.from("profiles")
-.select("*")
-.eq("id",currentUser.id)
-.single();
+async function loadDashboard() {
+  try {
+    if (!currentUser) {
+      showAuthError("No logged-in user was found.");
+      return;
+    }
 
+    const { data: profile, error } = await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("id", currentUser.id)
+      .maybeSingle();
 
-if(error){
+    if (error) {
+      showAuthError("Profile error: " + error.message);
+      return;
+    }
 
-alert(error.message);
+    if (!profile) {
+      showAuthError(
+        "Your login worked, but your profile was not found. User ID: " +
+        currentUser.id
+      );
+      return;
+    }
 
-await supabaseClient.auth.signOut();
+    currentProfile = profile;
 
-return;
+    document.getElementById("authPage").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+
+    document.getElementById("userName").textContent =
+      profile.full_name || "User";
+
+    document.getElementById("profileName").textContent =
+      profile.full_name || "User";
+
+    document.getElementById("profileEmail").textContent =
+      currentUser.email || "";
+
+    document.getElementById("balance").textContent =
+      Number(profile.balance || 0).toLocaleString("en-NG", {
+        minimumFractionDigits: 2
+      });
+
+    updateActivationUI();
+
+    loadSettings();
+    loadTasks();
+    loadTransactions();
+
+  } catch (error) {
+    showAuthError("Dashboard error: " + error.message);
+  }
 }
+  
+ function showAuthError(message) {
+  const box = document.getElementById("authMessage");
 
+  document.getElementById("authPage").classList.remove("hidden");
+  document.getElementById("app").classList.add("hidden");
 
-currentProfile=profile;
-
-
-document
-.getElementById("authPage")
-.classList.add("hidden");
-
-
-document
-.getElementById("app")
-.classList.remove("hidden");
-
-
-document
-.getElementById("userName")
-.textContent=
-profile.full_name || "User";
-
-
-document
-.getElementById("profileName")
-.textContent=
-profile.full_name || "User";
-
-
-document
-.getElementById("profileEmail")
-.textContent=
-currentUser.email;
-
-
-document
-.getElementById("balance")
-.textContent=
-Number(profile.balance || 0)
-.toLocaleString(
-"en-NG",
-{
-minimumFractionDigits:2
-}
-);
-
-
-updateActivationUI();
-
-loadSettings();
-
-loadTasks();
-
-loadTransactions();
-
-}
-
-
+  box.innerHTML = `
+    <div style="
+      margin-top:15px;
+      padding:14px;
+      background:#ffe5e5;
+      color:#b42318;
+      border-radius:10px;
+      font-size:14px;
+      word-break:break-word;
+    ">
+      ${escapeHTML(message)}
+    </div>
+  `;
+  }
 // ===========================
 // ACTIVATION UI
 // ===========================
