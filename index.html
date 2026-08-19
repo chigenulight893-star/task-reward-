@@ -651,103 +651,152 @@ return;
 
 }
 
+async function signUp(){
 
-try{
+  showMessage(
+    "authMessage",
+    "Creating your account...",
+    "loading"
+  );
 
-const result =
-await supabaseClient.auth.signUp({
+  const name =
+    document.getElementById("fullName").value.trim();
 
-email:email,
+  const email =
+    document.getElementById("email").value.trim();
 
-password:password
+  const password =
+    document.getElementById("password").value;
 
-});
+  if(!name || !email || !password){
 
+    showMessage(
+      "authMessage",
+      "Please fill all fields.",
+      "error"
+    );
 
-if(result.error){
+    return;
+  }
 
-showMessage(
-"authMessage",
-"Signup error: " +
-result.error.message,
-"error"
-);
+  if(password.length < 6){
 
-return;
+    showMessage(
+      "authMessage",
+      "Password must be at least 6 characters.",
+      "error"
+    );
 
+    return;
+  }
+
+  try{
+
+    const username =
+      email.split("@")[0];
+
+    /* Create Supabase account */
+
+    const {data,error} =
+      await supabaseClient.auth.signUp({
+
+        email: email,
+        password: password
+
+      });
+
+    if(error){
+
+      showMessage(
+        "authMessage",
+        "Signup error: " + error.message,
+        "error"
+      );
+
+      return;
+    }
+
+    if(!data.user){
+
+      showMessage(
+        "authMessage",
+        "Account could not be created.",
+        "error"
+      );
+
+      return;
+    }
+
+    /* Create profile */
+
+    const {error:profileError} =
+      await supabaseClient
+      .from("profiles")
+      .insert({
+
+        id: data.user.id,
+
+        full_name: name,
+
+        username: username,
+
+        balance: 0,
+
+        is_admin: false,
+
+        is_activated: false
+
+      });
+
+    if(profileError){
+
+      showMessage(
+        "authMessage",
+        "Account created but profile failed: " +
+        profileError.message,
+        "error"
+      );
+
+      return;
+    }
+
+    /*
+      If Supabase returned a session,
+      open dashboard immediately.
+    */
+
+    if(data.session){
+
+      currentUser = data.user;
+
+      await loadProfile();
+
+      return;
+    }
+
+    /*
+      If email confirmation is required,
+      tell the user to confirm first.
+    */
+
+    showMessage(
+      "authMessage",
+      "Account created successfully. Check your email to confirm your account, then login.",
+      "success"
+    );
+
+  }catch(error){
+
+    showMessage(
+      "authMessage",
+      "Signup error: " + error.message,
+      "error"
+    );
+
+  }
 }
 
-
-if(!result.data.user){
-
-showMessage(
-"authMessage",
-"Supabase did not return a user.",
-"error"
-);
-
-return;
-
-}
-
-
-showMessage(
-"authMessage",
-"Step 2: Creating profile...",
-"loading"
-);
-
-
-const profileResult =
-await supabaseClient
-.from("profiles")
-.insert({
-
-id:result.data.user.id,
-
-full_name:name,
-
-username:email.split("@")[0]
-
-});
-
-
-if(profileResult.error){
-
-showMessage(
-"authMessage",
-"Account created but profile failed: " +
-profileResult.error.message,
-"error"
-);
-
-return;
-
-}
-
-
-showMessage(
-"authMessage",
-"Account created successfully. You can now login.",
-"success"
-);
-
-
-}catch(error){
-
-showMessage(
-"authMessage",
-"Signup error: " +
-error.message,
-"error"
-);
-
-}
-
-}
-
-
-/* =================================
+  )/* =================================
    LOGIN
 ================================= */
 
