@@ -1,266 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TaskReward</title>
 
-  <title>TaskReward</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+}
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
+body{
+  background:#f4f7f6;
+  color:#17201d;
+}
 
-    body {
-      background: #f4f7f6;
-      color: #17201d;
-    }
+.container{
+  max-width:480px;
+  margin:auto;
+  min-height:100vh;
+  background:#fff;
+}
 
-    .container {
-      max-width: 480px;
-      margin: auto;
-      min-height: 100vh;
-      background: white;
-    }
+header{
+  background:#087f5b;
+  color:#fff;
+  padding:20px 18px;
+  border-radius:0 0 20px 20px;
+}
 
-    header {
-      background: #087f5b;
-      color: white;
-      padding: 22px 18px;
-      border-radius: 0 0 20px 20px;
-    }
+header h1{
+  font-size:24px;
+}
 
-    header h1 {
-      font-size: 24px;
-    }
+.top-user{
+  margin-top:7px;
+  font-size:14px;
+}
 
-    header p {
-      margin-top: 6px;
-      opacity: .9;
-    }
+.header-actions{
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+}
 
-    .content {
-      padding: 18px;
-    }
+.header-actions button{
+  width:auto;
+  margin:0;
+  padding:9px 13px;
+}
 
-    .balance {
-      background: #e9f8f2;
-      padding: 20px;
-      border-radius: 15px;
-      margin-bottom: 18px;
-    }
+.content{
+  padding:18px;
+}
 
-    .balance small {
-      color: #52615c;
-    }
+.balance{
+  background:#e9f8f2;
+  padding:20px;
+  border-radius:15px;
+  margin-bottom:18px;
+}
 
-    .balance h2 {
-      margin-top: 8px;
-      font-size: 30px;
-      color: #087f5b;
-    }
+.balance small{
+  color:#52615c;
+}
 
-    .activation {
-      background: #fff4d6;
-      border: 1px solid #f0d58a;
-      padding: 18px;
-      border-radius: 15px;
-      margin-bottom: 18px;
-    }
+.balance h2{
+  margin-top:8px;
+  font-size:30px;
+  color:#087f5b;
+}
 
-    .activation h3 {
-      margin-bottom: 8px;
-    }
+.activation{
+  background:#fff4d6;
+  border:1px solid #f0d58a;
+  padding:18px;
+  border-radius:15px;
+  margin-bottom:18px;
+}
 
-    button {
-      border: none;
-      padding: 13px 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 12px;
-    }
+.activation h3{
+  margin-bottom:8px;
+}
 
-    .primary {
-      background: #087f5b;
-      color: white;
-      width: 100%;
-    }
+button{
+  border:none;
+  padding:13px 16px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+  margin-top:12px;
+}
 
-    .secondary {
-      background: #e9f8f2;
-      color: #087f5b;
-      width: 100%;
-    }
+.primary{
+  background:#087f5b;
+  color:white;
+  width:100%;
+}
 
-    .danger {
-      background: #ffe5e5;
-      color: #b42318;
-      width: 100%;
-    }
+.secondary{
+  background:#e9f8f2;
+  color:#087f5b;
+  width:100%;
+}
 
-    .menu {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
+.danger{
+  background:#ffe5e5;
+  color:#b42318;
+  width:100%;
+}
 
-    .menu button {
-      margin: 0;
-      background: #f1f4f3;
-      color: #17201d;
-    }
+.menu{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:20px;
+}
 
-    .card {
-      background: white;
-      border: 1px solid #e3e8e6;
-      border-radius: 15px;
-      padding: 18px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.04);
-    }
+.menu button{
+  margin:0;
+  background:#f1f4f3;
+  color:#17201d;
+}
 
-    .card h3 {
-      margin-bottom: 8px;
-    }
+.card{
+  background:white;
+  border:1px solid #e3e8e6;
+  border-radius:15px;
+  padding:18px;
+  margin-bottom:15px;
+  box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
 
-    .locked {
-      text-align: center;
-      padding: 30px 15px;
-      color: #66736e;
-    }
+.card h3{
+  margin-bottom:8px;
+}
 
-    input {
-      width: 100%;
-      padding: 13px;
-      margin-top: 8px;
-      border: 1px solid #ccd5d1;
-      border-radius: 9px;
-      outline: none;
-    }
+.locked{
+  text-align:center;
+  padding:30px 15px;
+  color:#66736e;
+}
 
-    label {
-      display: block;
-      margin-top: 12px;
-      font-size: 14px;
-      font-weight: bold;
-    }
+input{
+  width:100%;
+  padding:13px;
+  margin-top:8px;
+  border:1px solid #ccd5d1;
+  border-radius:9px;
+  outline:none;
+}
 
-    .hidden {
-      display: none !important;
-    }
+label{
+  display:block;
+  margin-top:12px;
+  font-size:14px;
+  font-weight:bold;
+}
 
-    .auth {
-      padding: 30px 20px;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-    }
+.hidden{
+  display:none!important;
+}
 
-    .auth-box {
-      width: 100%;
-    }
+.auth{
+  padding:30px 20px;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+}
 
-    .auth-box h1 {
-      color: #087f5b;
-      margin-bottom: 8px;
-    }
+.auth-box{
+  width:100%;
+}
 
-    .auth-box p {
-      color: #65716d;
-      margin-bottom: 20px;
-    }
+.auth-box h1{
+  color:#087f5b;
+  margin-bottom:8px;
+}
 
-    .error {
-      color: #b42318;
-      margin-top: 10px;
-      font-size: 14px;
-    }
+.auth-box p{
+  color:#65716d;
+  margin-bottom:20px;
+}
 
-    .success {
-      color: #087f5b;
-      margin-top: 10px;
-      font-size: 14px;
-    }
+.error{
+  color:#b42318;
+  margin-top:10px;
+  font-size:14px;
+}
 
-    .status {
-      display: inline-block;
-      padding: 5px 9px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: bold;
-    }
+.success{
+  color:#087f5b;
+  margin-top:10px;
+  font-size:14px;
+}
 
-    .inactive {
-      background: #fff0c2;
-      color: #806000;
-    }
+.status{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+}
 
-    .active {
-      background: #d9f7eb;
-      color: #087f5b;
-    }
+.inactive{
+  background:#fff0c2;
+  color:#806000;
+}
 
-    .task {
-      margin-top: 12px;
-      padding: 15px;
-      border: 1px solid #e1e6e4;
-      border-radius: 12px;
-    }
+.active{
+  background:#d9f7eb;
+  color:#087f5b;
+}
 
-    .task p {
-      margin-top: 5px;
-      color: #66736e;
-      font-size: 14px;
-    }
+.task{
+  margin-top:12px;
+  padding:15px;
+  border:1px solid #e1e6e4;
+  border-radius:12px;
+}
 
-    .task strong {
-      color: #087f5b;
-    }
+.task p{
+  margin-top:5px;
+  color:#66736e;
+  font-size:14px;
+}
 
-    .section {
-      display: none;
-    }
+.task strong{
+  color:#087f5b;
+}
 
-    .section.active {
-      display: block;
-    }
+.section{
+  display:none;
+}
 
-    .top-user {
-      margin-top: 8px;
-      font-size: 14px;
-    }
-  </style>
+.section.active{
+  display:block;
+}
+
+.auth-title{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.small-note{
+  font-size:13px;
+  color:#66736e;
+  margin-top:8px;
+}
+</style>
 </head>
 
 <body>
 
-<!-- LOGIN / SIGNUP -->
+<!-- AUTH -->
 <div id="authPage" class="auth">
   <div class="auth-box">
 
-    <h1>TaskReward</h1>
-    <p>Complete tasks and manage your account.</p>
+    <div class="auth-title">
+      <h1>TaskReward</h1>
+      <p>Complete available tasks and manage your account.</p>
+    </div>
 
     <div class="card">
 
       <input id="fullName"
-             type="text"
-             placeholder="Full name">
+        type="text"
+        placeholder="Full name">
 
       <input id="email"
-             type="email"
-             placeholder="Email address">
+        type="email"
+        placeholder="Email address">
 
       <input id="password"
-             type="password"
-             placeholder="Password">
+        type="password"
+        placeholder="Password">
 
       <button class="primary" onclick="signUp()">
         Create Account
@@ -273,852 +292,40 @@
       <div id="authMessage"></div>
 
     </div>
+
   </div>
 </div>
 
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div id="app" class="container hidden">
 
-  <header>
-    <h1>TaskReward</h1>
-    <div class="top-user">
-      Welcome, <span id="userName">User</span>
-    </div>
-  </header>
+<header>
 
-  <div class="content">
+  <h1>TaskReward</h1>
 
-    <!-- BALANCE -->
-    <div class="balance">
-      <small>Available Balance</small>
-      <h2>₦<span id="balance">0.00</span></h2>
+  <div class="top-user">
+    Welcome, <span id="userName">User</span>
+  </div>
 
-      <div style="margin-top:10px">
-        Account status:
-        <span id="status" class="status inactive">
-          Inactive
-        </span>
-      </div>
-    </div>
+  <div class="header-actions">
 
-
-    <!-- ACTIVATION -->
-    <div id="activationBox" class="activation">
-
-      <h3>🔐 Activate Your Account</h3>
-
-      <p>
-        Your account is currently inactive.
-        Account activation costs ₦1,000.
-      </p>
-
-      <button class="primary" onclick="showSection('deposit')">
-        Activate for ₦1,000
-      </button>
-
-    </div>
-
-
-    <!-- MENU -->
-    <div class="menu">
-
-      <button onclick="showSection('home')">
-        🏠 Home
-      </button>
-
-      <button onclick="showSection('tasks')">
-        📋 Tasks
-      </button>
-
-      <button onclick="showSection('deposit')">
-        ➕ Deposit
-      </button>
-
-      <button onclick="showSection('withdraw')">
-        💸 Withdraw
-      </button>
-
-      <button onclick="showSection('profile')">
-        👤 Profile
-      </button>
-
-      <button onclick="showSection('transactions')">
-        📜 Transactions
-      </button>
-
-    </div>
-
-
-    <!-- HOME -->
-    <div id="home" class="section active">
-
-      <div class="card">
-
-        <h3>Welcome</h3>
-
-        <p>
-          Complete available tasks after your account
-          has been activated.
-        </p>
-
-      </div>
-
-    </div>
-
-
-    <!-- TASKS -->
-    <div id="tasks" class="section">
-
-      <div id="lockedTasks" class="card locked">
-
-        🔒
-
-        <h3>Tasks Locked</h3>
-
-        <p>
-          Activate your account before accessing tasks.
-        </p>
-
-      </div>
-
-      <div id="taskList" class="card hidden">
-
-        <h3>Available Tasks</h3>
-
-        <div id="tasksContainer"></div>
-
-      </div>
-
-    </div>
-
-
-    <!-- DEPOSIT -->
-    <div id="deposit" class="section">
-
-      <div class="card">
-
-        <h3>💰 Deposit / Activation</h3>
-
-        <p>
-          Use the payment details provided by the
-          administrator.
-        </p>
-
-        <br>
-
-        <strong>Bank</strong>
-        <p id="bankName">Loading...</p>
-
-        <strong>Account Name</strong>
-        <p id="accountName">Loading...</p>
-
-        <strong>Account Number</strong>
-        <p id="accountNumber">Loading...</p>
-
-      </div>
-
-
-      <div class="card">
-
-        <h3>Submit Payment</h3>
-
-        <label>Amount</label>
-        <input id="depositAmount"
-               type="number"
-               placeholder="1000">
-
-        <label>Payment Reference</label>
-        <input id="depositReference"
-               type="text"
-               placeholder="Payment reference">
-
-        <button class="primary"
-                onclick="submitDeposit()">
-          Submit Deposit
-        </button>
-
-        <div id="depositMessage"></div>
-
-      </div>
-
-    </div>
-
-
-    <!-- WITHDRAW -->
-    <div id="withdraw" class="section">
-
-      <div class="card">
-
-        <h3>💸 Withdraw</h3>
-
-        <p>
-          Minimum withdrawal amount: <strong>₦1,000</strong>
-        </p>
-
-        <label>Amount</label>
-
-        <input id="withdrawAmount"
-               type="number"
-               placeholder="1000">
-
-        <label>Bank Name</label>
-
-        <input id="withdrawBank"
-               type="text"
-               placeholder="Bank name">
-
-        <label>Account Name</label>
-
-        <input id="withdrawName"
-               type="text"
-               placeholder="Account name">
-
-        <label>Account Number</label>
-
-        <input id="withdrawAccount"
-               type="text"
-               placeholder="Account number">
-
-        <button class="primary"
-                onclick="requestWithdrawal()">
-          Request Withdrawal
-        </button>
-
-        <div id="withdrawMessage"></div>
-
-      </div>
-
-    </div>
-
-
-    <!-- PROFILE -->
-    <div id="profile" class="section">
-
-      <div class="card">
-
-        <h3>👤 My Profile</h3>
-
-        <p>
-          <strong>Name:</strong>
-          <span id="profileName"></span>
-        </p>
-
-        <p style="margin-top:8px">
-          <strong>Email:</strong>
-          <span id="profileEmail"></span>
-        </p>
-
-      </div>
-
-      <button class="danger" onclick="logout()">
-        Logout
-      </button>
-
-    </div>
-
-
-    <!-- TRANSACTIONS -->
-    <div id="transactions" class="section">
-
-      <div class="card">
-
-        <h3>📜 Transaction History</h3>
-
-        <div id="transactionList">
-          No transactions yet.
-        </div>
-
-      </div>
-
-    </div>
+    <button
+      class="danger"
+      onclick="logout()">
+      🚪 Logout
+    </button>
 
   </div>
-</div>
 
+</header>
 
-<script>
 
-const SUPABASE_URL =
-"https://ztvliwkztcxmdoidowxn.supabase.co";
+<div class="content">
 
-const SUPABASE_KEY =
-"sb_publishable_QrM6y6lTW4M63DaGzO28_g_NeePqlwb";
+<!-- BALANCE -->
+<div class="balance">
 
-const supabaseClient =
-supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+  <small>Available Balance</small>
 
-let currentUser = null;
-let currentProfile = null;
-
-
-// ---------------------------
-// SIGN UP
-// ---------------------------
-
-async function signUp() {
-
-  const name =
-    document.getElementById("fullName").value.trim();
-
-  const email =
-    document.getElementById("email").value.trim();
-
-  const password =
-    document.getElementById("password").value;
-
-  const message =
-    document.getElementById("authMessage");
-
-  if (!name || !email || !password) {
-
-    message.innerHTML =
-      '<p class="error">Please fill all fields.</p>';
-
-    return;
-  }
-
-  const { data, error } =
-    await supabaseClient.auth.signUp({
-      email: email,
-      password: password
-    });
-
-  if (error) {
-
-    message.innerHTML =
-      `<p class="error">${error.message}</p>`;
-
-    return;
-  }
-
-  if (!data.user) {
-
-    message.innerHTML =
-      '<p class="error">Account could not be created.</p>';
-
-    return;
-  }
-
-  const { error: profileError } =
-    await supabaseClient
-      .from("profiles")
-      .insert({
-        id: data.user.id,
-        full_name: name,
-        username: email.split("@")[0]
-      });
-
-  if (profileError) {
-
-    message.innerHTML =
-      `<p class="error">${profileError.message}</p>`;
-
-    return;
-  }
-
-  message.innerHTML =
-    '<p class="success">Account created. You can now login.</p>';
-}
-
-
-// ---------------------------
-// LOGIN
-// ---------------------------
-
-async function login() {
-
-  const email =
-    document.getElementById("email").value.trim();
-
-  const password =
-    document.getElementById("password").value;
-
-  const message =
-    document.getElementById("authMessage");
-
-  const { data, error } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
-
-  if (error) {
-
-    message.innerHTML =
-      `<p class="error">${error.message}</p>`;
-
-    return;
-  }
-
-  currentUser = data.user;
-
-  await loadDashboard();
-}
-
-
-// ---------------------------
-// LOAD DASHBOARD
-// ---------------------------
-
-async function loadDashboard() {
-
-  const { data: profile, error } =
-    await supabaseClient
-      .from("profiles")
-      .select("*")
-      .eq("id", currentUser.id)
-      .single();
-
-  if (error) {
-
-    alert(error.message);
-
-    return;
-  }
-
-  currentProfile = profile;
-
-  document
-    .getElementById("authPage")
-    .classList.add("hidden");
-
-  document
-    .getElementById("app")
-    .classList.remove("hidden");
-
-  document
-    .getElementById("userName")
-    .textContent =
-      profile.full_name || "User";
-
-  document
-    .getElementById("profileName")
-    .textContent =
-      profile.full_name || "User";
-
-  document
-    .getElementById("profileEmail")
-    .textContent =
-      currentUser.email;
-
-  document
-    .getElementById("balance")
-    .textContent =
-      Number(profile.balance || 0).toLocaleString(
-        "en-NG",
-        {
-          minimumFractionDigits: 2
-        }
-      );
-
-  updateActivationUI();
-
-  loadSettings();
-  loadTasks();
-  loadTransactions();
-}
-
-
-// ---------------------------
-// ACTIVATION UI
-// ---------------------------
-
-function updateActivationUI() {
-
-  const status =
-    document.getElementById("status");
-
-  const activation =
-    document.getElementById("activationBox");
-
-  const locked =
-    document.getElementById("lockedTasks");
-
-  const taskList =
-    document.getElementById("taskList");
-
-  if (currentProfile.is_activated) {
-
-    status.textContent = "Activated";
-
-    status.className =
-      "status active";
-
-    activation.classList.add("hidden");
-
-    locked.classList.add("hidden");
-
-    taskList.classList.remove("hidden");
-
-  } else {
-
-    status.textContent = "Inactive";
-
-    status.className =
-      "status inactive";
-
-    activation.classList.remove("hidden");
-
-    locked.classList.remove("hidden");
-
-    taskList.classList.add("hidden");
-  }
-}
-
-
-// ---------------------------
-// LOAD ADMIN PAYMENT SETTINGS
-// ---------------------------
-
-async function loadSettings() {
-
-  const { data, error } =
-    await supabaseClient
-      .from("admin_settings")
-      .select("*")
-      .limit(1)
-      .single();
-
-  if (error) {
-
-    console.log(error);
-
-    return;
-  }
-
-  document
-    .getElementById("bankName")
-    .textContent =
-      data.bank_name || "Not provided";
-
-  document
-    .getElementById("accountName")
-    .textContent =
-      data.account_name || "Not provided";
-
-  document
-    .getElementById("accountNumber")
-    .textContent =
-      data.account_number || "Not provided";
-}
-
-
-// ---------------------------
-// LOAD TASKS
-// ---------------------------
-
-async function loadTasks() {
-
-  if (!currentProfile.is_activated)
-    return;
-
-  const { data, error } =
-    await supabaseClient
-      .from("tasks")
-      .select("*")
-      .eq("status", "active")
-      .order("created_at", {
-        ascending: false
-      });
-
-  const container =
-    document.getElementById("tasksContainer");
-
-  if (error) {
-
-    container.innerHTML =
-      `<p class="error">${error.message}</p>`;
-
-    return;
-  }
-
-  if (!data || data.length === 0) {
-
-    container.innerHTML =
-      "<p>No tasks available right now.</p>";
-
-    return;
-  }
-
-  container.innerHTML = "";
-
-  data.forEach(task => {
-
-    const div =
-      document.createElement("div");
-
-    div.className = "task";
-
-    div.innerHTML = `
-      <h4>${escapeHTML(task.title)}</h4>
-
-      <p>
-        ${escapeHTML(task.description || "")}
-      </p>
-
-      <p>
-        Reward:
-        <strong>
-          ₦${Number(task.reward).toLocaleString()}
-        </strong>
-      </p>
-    `;
-
-    container.appendChild(div);
-  });
-}
-
-
-// ---------------------------
-// DEPOSIT
-// ---------------------------
-
-async function submitDeposit() {
-
-  const amount =
-    Number(
-      document.getElementById("depositAmount").value
-    );
-
-  const reference =
-    document
-      .getElementById("depositReference")
-      .value.trim();
-
-  const message =
-    document.getElementById("depositMessage");
-
-  if (!amount || amount <= 0) {
-
-    message.innerHTML =
-      '<p class="error">Enter a valid amount.</p>';
-
-    return;
-  }
-
-  const { error } =
-    await supabaseClient
-      .from("deposits")
-      .insert({
-        user_id: currentUser.id,
-        amount: amount,
-        reference: reference
-      });
-
-  if (error) {
-
-    message.innerHTML =
-      `<p class="error">${error.message}</p>`;
-
-    return;
-  }
-
-  message.innerHTML =
-    '<p class="success">Deposit submitted for review.</p>';
-}
-
-
-// ---------------------------
-// WITHDRAWAL
-// ---------------------------
-
-async function requestWithdrawal() {
-
-  const amount =
-    Number(
-      document.getElementById("withdrawAmount").value
-    );
-
-  const bank =
-    document.getElementById("withdrawBank").value.trim();
-
-  const name =
-    document.getElementById("withdrawName").value.trim();
-
-  const account =
-    document.getElementById("withdrawAccount").value.trim();
-
-  const message =
-    document.getElementById("withdrawMessage");
-
-  if (amount < 1000) {
-
-    message.innerHTML =
-      '<p class="error">Minimum withdrawal is ₦1,000.</p>';
-
-    return;
-  }
-
-  if (!bank || !name || !account) {
-
-    message.innerHTML =
-      '<p class="error">Please complete your bank details.</p>';
-
-    return;
-  }
-
-  if (amount > Number(currentProfile.balance)) {
-
-    message.innerHTML =
-      '<p class="error">Insufficient balance.</p>';
-
-    return;
-  }
-
-  const { error } =
-    await supabaseClient
-      .from("withdrawals")
-      .insert({
-        user_id: currentUser.id,
-        amount: amount,
-        bank_name: bank,
-        account_name: name,
-        account_number: account
-      });
-
-  if (error) {
-
-    message.innerHTML =
-      `<p class="error">${error.message}</p>`;
-
-    return;
-  }
-
-  message.innerHTML =
-    '<p class="success">Withdrawal request submitted for review.</p>';
-}
-
-
-// ---------------------------
-// TRANSACTIONS
-// ---------------------------
-
-async function loadTransactions() {
-
-  const { data, error } =
-    await supabaseClient
-      .from("transactions")
-      .select("*")
-      .eq("user_id", currentUser.id)
-      .order("created_at", {
-        ascending: false
-      });
-
-  const list =
-    document.getElementById("transactionList");
-
-  if (error) {
-
-    list.innerHTML =
-      `<p class="error">${error.message}</p>`;
-
-    return;
-  }
-
-  if (!data || data.length === 0) {
-
-    list.textContent =
-      "No transactions yet.";
-
-    return;
-  }
-
-  list.innerHTML = "";
-
-  data.forEach(transaction => {
-
-    const item =
-      document.createElement("div");
-
-    item.className = "task";
-
-    item.innerHTML = `
-      <strong>${escapeHTML(transaction.type)}</strong>
-
-      <p>
-        ₦${Number(transaction.amount).toLocaleString()}
-      </p>
-
-      <p>
-        ${escapeHTML(transaction.description || "")}
-      </p>
-    `;
-
-    list.appendChild(item);
-  });
-}
-
-
-// ---------------------------
-// NAVIGATION
-// ---------------------------
-
-function showSection(section) {
-
-  document
-    .querySelectorAll(".section")
-    .forEach(element => {
-      element.classList.remove("active");
-    });
-
-  document
-    .getElementById(section)
-    .classList.add("active");
-}
-
-
-// ---------------------------
-// LOGOUT
-// ---------------------------
-
-async function logout() {
-
-  await supabaseClient.auth.signOut();
-
-  location.reload();
-}
-
-
-// ---------------------------
-// SECURITY HELPER
-// ---------------------------
-
-function escapeHTML(value) {
-
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-
-// ---------------------------
-// CHECK EXISTING SESSION
-// ---------------------------
-
-async function checkSession() {
-
-  const { data } =
-    await supabaseClient.auth.getSession();
-
-  if (data.session) {
-
-    currentUser =
-      data.session.user;
-
-    await loadDashboard();
-  }
-}
-
-checkSession();
-
-</script>
-
-</body>
-  </html>
+  <h2
