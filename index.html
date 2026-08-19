@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TaskReward</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#f4f7f6;
+  color:#17201d;
+}
+
+.container{
+  width:100%;
+  max-width:480px;
+  min-height:100vh;
+  margin:auto;
+  background:white;
+}
+
+.auth{
+  min-height:100vh;
+  padding:30px 20px;
+  display:flex;
+  align-items:center;
+}
+
+.box{
+  width:100%;
+}
+
+h1{
+  color:#087f5b;
+  margin-bottom:8px;
+}
+
+.subtitle{
+  color:#65716d;
+  margin-bottom:20px;
+}
+
+.card{
+  background:white;
+  border:1px solid #e0e6e3;
+  border-radius:15px;
+  padding:18px;
+  margin-bottom:15px;
+  box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
+
+input{
+  width:100%;
+  padding:13px;
+  margin-top:9px;
+  border:1px solid #ccd5d1;
+  border-radius:9px;
+  outline:none;
+}
+
+button{
+  width:100%;
+  border:0;
+  padding:13px;
+  margin-top:12px;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.primary{
+  background:#087f5b;
+  color:white;
+}
+
+.secondary{
+  background:#e9f8f2;
+  color:#087f5b;
+}
+
+.logout{
+  background:#ffe5e5;
+  color:#b42318;
+}
+
+header{
+  background:#087f5b;
+  color:white;
+  padding:20px;
+  border-radius:0 0 20px 20px;
+}
+
+header h1{
+  color:white;
+}
+
+.content{
+  padding:18px;
+}
+
+.balance{
+  background:#e9f8f2;
+  padding:20px;
+  border-radius:15px;
+  margin-bottom:18px;
+}
+
+.balance h2{
+  color:#087f5b;
+  font-size:30px;
+  margin-top:8px;
+}
+
+.status{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+  margin-top:8px;
+}
+
+.active{
+  background:#d9f7eb;
+  color:#087f5b;
+}
+
+.inactive{
+  background:#fff0c2;
+  color:#806000;
+}
+
+.menu{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.menu button{
+  margin:0;
+  background:#f1f4f3;
+  color:#17201d;
+}
+
+.section{
+  display:none;
+}
+
+.section.active{
+  display:block;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.message{
+  margin-top:15px;
+  padding:12px;
+  border-radius:9px;
+  background:#f1f4f3;
+  font-size:14px;
+  line-height:1.5;
+  word-break:break-word;
+}
+
+.error{
+  background:#ffe5e5;
+  color:#b42318;
+}
+
+.success{
+  background:#d9f7eb;
+  color:#087f5b;
+}
+
+.loading{
+  background:#fff4d6;
+  color:#806000;
+}
+
+.small{
+  color:#65716d;
+  font-size:13px;
+  margin-top:8px;
+}
+</style>
+</head>
+
+<body>
+
+
+<!-- =========================
+     LOGIN
+========================= -->
+
+<div id="authPage" class="auth">
+
+<div class="box">
+
+<h1>TaskReward</h1>
+
+<p class="subtitle">
+Complete tasks and manage your account.
+</p>
+
+<div class="card">
+
+<input
+id="fullName"
+type="text"
+placeholder="Full name">
+
+<input
+id="email"
+type="email"
+placeholder="Email address">
+
+<input
+id="password"
+type="password"
+placeholder="Password">
+
+<button
+class="primary"
+onclick="signUp()">
+Create Account
+</button>
+
+<button
+class="secondary"
+onclick="login()">
+Login
+</button>
+
+<div
+id="authMessage"
+class="message hidden">
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =========================
+     USER DASHBOARD
+========================= -->
+
+<div
+id="app"
+class="container hidden">
+
+<header>
+
+<h1>TaskReward</h1>
+
+<p>
+Welcome, <span id="userName">User</span>
+</p>
+
+<button
+class="logout"
+onclick="logout()">
+🚪 Logout
+</button>
+
+</header>
+
+
+<div class="content">
+
+
+<!-- BALANCE -->
+
+<div class="balance">
+
+<small>Available Balance</small>
+
+<h2>
+₦<span id="balance">0.00</span>
+</h2>
+
+<div>
+
+Account status:
+
+<span
+id="status"
+class="status inactive">
+Loading
+</span>
+
+</div>
+
+</div>
+
+
+<!-- MENU -->
+
+<div class="menu">
+
+<button onclick="showSection('home')">
+🏠 Home
+</button>
+
+<button onclick="showSection('tasks')">
+📋 Tasks
+</button>
+
+<button onclick="showSection('deposit')">
+➕ Deposit
+</button>
+
+<button onclick="showSection('withdraw')">
+💸 Withdraw
+</button>
+
+<button onclick="showSection('profile')">
+👤 Profile
+</button>
+
+<button onclick="showSection('transactions')">
+📜 Transactions
+</button>
+
+</div>
+
+
+<!-- HOME -->
+
+<div
+id="home"
+class="section active">
+
+<div class="card">
+
+<h3>Welcome to TaskReward</h3>
+
+<p class="small">
+Your dashboard is working.
+</p>
+
+</div>
+
+</div>
+
+
+<!-- TASKS -->
+
+<div
+id="tasks"
+class="section">
+
+<div class="card">
+
+<h3>📋 Tasks</h3>
+
+<div id="taskMessage">
+Loading tasks...
+</div>
+
+<div
+id="tasksContainer">
+</div>
+
+</div>
+
+</div>
+
+
+<!-- DEPOSIT -->
+
+<div
+id="deposit"
+class="section">
+
+<div class="card">
+
+<h3>💰 Deposit / Activation</h3>
+
+<p class="small">
+Payment details provided by the administrator.
+</p>
+
+<br>
+
+<strong>Bank</strong>
+
+<p id="bankName">
+Loading...
+</p>
+
+<br>
+
+<strong>Account Name</strong>
+
+<p id="accountName">
+Loading...
+</p>
+
+<br>
+
+<strong>Account Number</strong>
+
+<p id="accountNumber">
+Loading...
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>Submit Deposit</h3>
+
+<input
+id="depositAmount"
+type="number"
+placeholder="Amount">
+
+<input
+id="depositReference"
+type="text"
+placeholder="Payment reference">
+
+<button
+class="primary"
+onclick="submitDeposit()">
+Submit Deposit
+</button>
+
+<div
+id="depositMessage"
+class="message hidden">
+</div>
+
+</div>
+
+</div>
+
+
+<!-- WITHDRAW -->
+
+<div
+id="withdraw"
+class="section">
+
+<div class="card">
+
+<h3>💸 Withdraw</h3>
+
+<p class="small">
+Minimum withdrawal: ₦1,000
+</p>
+
+<input
+id="withdrawAmount"
+type="number"
+placeholder="Amount">
+
+<input
+id="withdrawBank"
+type="text"
+placeholder="Bank name">
+
+<input
+id="withdrawName"
+type="text"
+placeholder="Account name">
+
+<input
+id="withdrawAccount"
+type="text"
+placeholder="Account number">
+
+<button
+class="primary"
+onclick="requestWithdrawal()">
+Request Withdrawal
+</button>
+
+<div
+id="withdrawMessage"
+class="message hidden">
+</div>
+
+</div>
+
+</div>
+
+
+<!-- PROFILE -->
+
+<div
+id="profile"
+class="section">
+
+<div class="card">
+
+<h3>👤 My Profile</h3>
+
+<p>
+<strong>Name:</strong>
+<span id="profileName"></span>
+</p>
+
+<p style="margin-top:10px">
+<strong>Email:</strong>
+<span id="profileEmail"></span>
+</p>
+
+<p style="margin-top:10px">
+<strong>User ID:</strong>
+<span
+id="profileID"
+style="font-size:11px;word-break:break-all">
+</span>
+</p>
+
+</div>
+
+<button
+class="logout"
+onclick="logout()">
+🚪 Logout
+</button>
+
+</div>
+
+
+<!-- TRANSACTIONS -->
+
+<div
+id="transactions"
+class="section">
+
+<div class="card">
+
+<h3>📜 Transactions</h3>
+
+<div id="transactionList">
+Loading...
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =================================
+   SUPABASE CONNECTION
+================================= */
+
+const SUPABASE_URL =
+"https://ztvliwkztcxmdoidowxn.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_QrM6y6lTW4M63DaGzO28_g_NeePqlwb";
+
+const supabaseClient =
+supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+let currentUser = null;
+let currentProfile = null;
+
+
+/* =================================
+   MESSAGE
+================================= */
+
+function showMessage(
+elementId,
+text,
+type="loading"
+){
+
+const element =
+document.getElementById(elementId);
+
+element.className =
+"message " + type;
+
+element.textContent =
+text;
+
+element.classList.remove("hidden");
+
+}
+
+
+/* =================================
+   SIGN UP
+================================= */
+
+async function signUp(){
+
+showMessage(
+"authMessage",
+"Step 1: Creating account...",
+"loading"
+);
+
+const name =
+document.getElementById("fullName")
+.value
+.trim();
+
+const email =
+document.getElementById("email")
+.value
+.trim();
+
+const password =
+document.getElementById("password")
+.value;
+
+
+if(!name || !email || !password){
+
+showMessage(
+"authMessage",
+"Please fill all fields.",
+"error"
+);
+
+return;
+
+}
+
+
+try{
+
+const result =
+await supabaseClient.auth.signUp({
+
+email:email,
+
+password:password
+
+});
+
+
+if(result.error){
+
+showMessage(
+"authMessage",
+"Signup error: " +
+result.error.message,
+"error"
+);
+
+return;
+
+}
+
+
+if(!result.data.user){
+
+showMessage(
+"authMessage",
+"Supabase did not return a user.",
+"error"
+);
+
+return;
+
+}
+
+
+showMessage(
+"authMessage",
+"Step 2: Creating profile...",
+"loading"
+);
+
+
+const profileResult =
+await supabaseClient
+.from("profiles")
+.insert({
+
+id:result.data.user.id,
+
+full_name:name,
+
+username:email.split("@")[0]
+
+});
+
+
+if(profileResult.error){
+
+showMessage(
+"authMessage",
+"Account created but profile failed: " +
+profileResult.error.message,
+"error"
+);
+
+return;
+
+}
+
+
+showMessage(
+"authMessage",
+"Account created successfully. You can now login.",
+"success"
+);
+
+
+}catch(error){
+
+showMessage(
+"authMessage",
+"Signup error: " +
+error.message,
+"error"
+);
+
+}
+
+}
+
+
+/* =================================
+   LOGIN
+================================= */
+
+async function login(){
+
+showMessage(
+"authMessage",
+"Step 1: Connecting to Supabase...",
+"loading"
+);
+
+const email =
+document.getElementById("email")
+.value
+.trim();
+
+const password =
+document.getElementById("password")
+.value;
+
+
+if(!email || !password){
+
+showMessage(
+"authMessage",
+"Enter your email and password.",
+"error"
+);
+
+return;
+
+}
+
+
+try{
+
+showMessage(
+"authMessage",
+"Step 2: Checking login...",
+"loading"
+);
+
+
+const result =
+await supabaseClient.auth
+.signInWithPassword({
+
+email:email,
+
+password:password
+
+});
+
+
+if(result.error){
+
+showMessage(
+"authMessage",
+"Login error: " +
+result.error.message,
+"error"
+);
+
+return;
+
+}
+
+
+if(!result.data.user){
+
+showMessage(
+"authMessage",
+"Login completed but no user was returned.",
+"error"
+);
+
+return;
+
+}
+
+
+currentUser =
+result.data.user;
+
+
+showMessage(
+"authMessage",
+"Step 3: Login successful. Loading profile...",
+"loading"
+);
+
+
+await loadProfile();
+
+
+}catch(error){
+
+showMessage(
+"authMessage",
+"Unexpected error: " +
+error.message,
+"error"
+);
+
+}
+
+}
+
+
+/* =================================
+   LOAD PROFILE
+================================= */
+
+async function loadProfile(){
+
+try{
+
+showMessage(
+"authMessage",
+"Step 4: Reading your profile...",
+"loading"
+);
+
+
+const result =
+await supabaseClient
+.from("profiles")
+.select("*")
+.eq("id",currentUser.id)
+.maybeSingle();
+
+
+if(result.error){
+
+showMessage(
+"authMessage",
+"PROFILE ERROR: " +
+result.error.message,
+"error"
+);
+
+return;
+
+}
+
+
+if(!result.data){
+
+showMessage(
+"authMessage",
+"LOGIN WORKED, BUT NO PROFILE WAS FOUND. User ID: " +
+currentUser.id,
+"error"
+);
+
+return;
+
+}
+
+
+currentProfile =
+result.data;
+
+
+showMessage(
+"authMessage",
+"Step 5: Profile found. Opening dashboard...",
+"success"
+);
+
+
+/*
+Give the browser a moment
+to display the success message.
+*/
+
+setTimeout(
+openDashboard,
+500
+);
+
+
+}catch(error){
+
+showMessage(
+"authMessage",
+"PROFILE ERROR: " +
+error.message,
+"error"
+);
+
+}
+
+}
+
+
+/* =================================
+   OPEN DASHBOARD
+================================= */
+
+function openDashboard(){
+
+document
+.getElementById("authPage")
+.classList.add("hidden");
+
+document
+.getElementById("app")
+.classList.remove("hidden");
+
+
+document
+.getElementById("userName")
+.textContent =
+currentProfile.full_name ||
+"User";
+
+
+document
+.getElementById("profileName")
+.textContent =
+currentProfile.full_name ||
+"User";
+
+
+document
+.getElementById("profileEmail")
+.textContent =
+currentUser.email ||
+"";
+
+
+document
+.getElementById("profileID")
+.textContent =
+currentUser.id;
+
+
+document
+.getElementById("balance")
+.textContent =
+Number(
+currentProfile.balance || 0
+).toLocaleString(
+"en-NG",
+{
+minimumFractionDigits:2
+}
+);
+
+
+const activated =
+currentProfile.is_activated === true;
+
+
+const status =
+document.getElementById("status");
+
+
+if(activated){
+
+status.textContent =
+"Activated";
+
+status.className =
+"status active";
+
+}else{
+
+status.textContent =
+"Inactive";
+
+status.className =
+"status inactive";
+
+}
+
+
+loadSettings();
+
+loadTasks();
+
+loadTransactions();
+
+}
+
+
+/* =================================
+   ADMIN PAYMENT DETAILS
+================================= */
+
+async function loadSettings(){
+
+const bank =
+document.getElementById("bankName");
+
+const accountName =
+document.getElementById("accountName");
+
+const accountNumber =
+document.getElementById("accountNumber");
+
+
+try{
+
+const result =
+await supabaseClient
+.from("admin_settings")
+.select("*")
+.limit(1)
+.maybeSingle();
+
+
+if(result.error){
+
+bank.textContent =
+"Could not load";
+
+accountName.textContent =
+"Could not load";
+
+accountNumber.textContent =
+"Could not load";
+
+console.log(
+"Settings error:",
+result.error.message
+);
+
+return;
+
+}
+
+
+if(!result.data){
+
+bank.textContent =
+"Not provided";
+
+accountName.textContent =
+"Not provided";
+
+accountNumber.textContent =
+"Not provided";
+
+return;
+
+}
+
+
+bank.textContent =
+result.data.bank_name ||
+"Not provided";
+
+accountName.textContent =
+result.data.account_name ||
+"Not provided";
+
+accountNumber.textContent =
+result.data.account_number ||
+"Not provided";
+
+
+}catch(error){
+
+console.log(error);
+
+}
+
+}
+
+
+/* =================================
+   TASKS
+================================= */
+
+async function loadTasks(){
+
+const message =
+document.getElementById(
+"taskMessage"
+);
+
+
+if(
+!currentProfile ||
+currentProfile.is_activated !== true
+){
+
+message.textContent =
+"🔒 Activate your account before accessing tasks.";
+
+return;
+
+}
+
+
+try{
+
+const result =
+await supabaseClient
+.from("tasks")
+.select("*")
+.eq("status","active")
+.order(
+"created_at",
+{
+ascending:false
+}
+);
+
+
+if(result.error){
+
+message.textContent =
+"Tasks error: " +
+result.error.message;
+
+return;
+
+}
+
+
+message.textContent =
+"";
+
+
+const container =
+document.getElementById(
+"tasksContainer"
+);
+
+
+if(!result.data ||
+result.data.length === 0){
+
+container.innerHTML =
+"<p>No tasks available right now.</p>";
+
+return;
+
+}
+
+
+container.innerHTML =
+"";
+
+
+result.data.forEach(
+task=>{
+
+const div =
+document.createElement("div");
+
+div.className =
+"card";
+
+
+div.innerHTML = `
+
+<strong>
+${escapeHTML(task.title)}
+</strong>
+
+<p class="small">
+${escapeHTML(
+task.description || ""
+)}
+</p>
+
+<p style="margin-top:8px">
+Reward:
+<strong>
+₦${Number(
+task.reward || 0
+).toLocaleString()}
+</strong>
+</p>
+
+`;
+
+container.appendChild(div);
+
+});
+
+}catch(error){
+
+message.textContent =
+"Tasks error: " +
+error.message;
+
+}
+
+}
+
+
+/* =================================
+   DEPOSIT
+================================= */
+
+async function submitDeposit(){
+
+const amount =
+Number(
+document
+.getElementById("depositAmount")
+.value
+);
+
+const reference =
+document
+.getElementById("depositReference")
+.value
+.trim();
+
+
+if(!amount || amount <= 0){
+
+showMessage(
+"depositMessage",
+"Enter a valid amount.",
+"error"
+);
+
+return;
+
+}
+
+
+try{
+
+const result =
+await supabaseClient
+.from("deposits")
+.insert({
+
+user_id:currentUser.id,
+
+amount:amount,
+
+reference:reference
+
+});
+
+
+if(result.error){
+
+showMessage(
+"depositMessage",
+"Deposit error: " +
+result.error.message,
+"error"
+);
+
+return;
+
+}
+
+
+showMessage(
+"depositMessage",
+"Deposit submitted for review.",
+"success"
+);
+
+
+}catch(error){
+
+showMessage(
+"depositMessage",
+error.message,
+"error"
+);
+
+}
+
+}
+
+
+/* =================================
+   WITHDRAWAL
+================================= */
+
+async function requestWithdrawal(){
+
+const amount =
+Number(
+document
+.getElementById("withdrawAmount")
+.value
+);
+
+const bank =
+document
+.getElementById("withdrawBank")
+.value
+.trim();
+
+const name =
+document
+.getElementById("withdrawName")
+.value
+.trim();
+
+const account =
+document
+.getElementById("withdrawAccount")
+.value
+.trim();
+
+
+if(amount < 1000){
+
+showMessage(
+"withdrawMessage",
+"Minimum withdrawal is ₦1,000.",
+"error"
+);
+
+return;
+
+}
+
+
+if(
+!bank ||
+!name ||
+!account
+){
+
+showMessage(
+"withdrawMessage",
+"Please complete your bank details.",
+"error"
+);
+
+return;
+
+}
+
+
+if(
+amount >
+Number(
+currentProfile.balance || 0
+)
+){
+
+showMessage(
+"withdrawMessage",
+"Insufficient balance.",
+"error"
+);
+
+return;
+
+}
+
+
+try{
+
+const result =
+await supabaseClient
+.from("withdrawals")
+.insert({
+
+user_id:currentUser.id,
+
+amount:amount,
+
+bank_name:bank,
+
+account_name:name,
+
+account_number:account
+
+});
+
+
+if(result.error){
+
+showMessage(
+"withdrawMessage",
+"Withdrawal error: " +
+result.error.message,
+"error"
+);
+
+return;
+
+}
+
+
+showMessage(
+"withdrawMessage",
+"Withdrawal request submitted for review.",
+"success"
+);
+
+
+}catch(error){
+
+showMessage(
+"withdrawMessage",
+error.message,
+"error"
+);
+
+}
+
+}
+
+
+/* =================================
+   TRANSACTIONS
+================================= */
+
+async function loadTransactions(){
+
+const list =
+document.getElementById(
+"transactionList"
+);
+
+
+try{
+
+const result =
+await supabaseClient
+.from("transactions")
+.select("*")
+.eq(
+"user_id",
+currentUser.id
+)
+.order(
+"created_at",
+{
+ascending:false
+}
+);
+
+
+if(result.error){
+
+list.textContent =
+"Transactions error: " +
+result.error.message;
+
+return;
+
+}
+
+
+if(
+!result.data ||
+result.data.length === 0
+){
+
+list.textContent =
+"No transactions yet.";
+
+return;
+
+}
+
+
+list.innerHTML =
+"";
+
+
+result.data.forEach(
+transaction=>{
+
+const div =
+document.createElement("div");
+
+div.className =
+"card";
+
+
+div.innerHTML = `
+
+<strong>
+${escapeHTML(
+transaction.type ||
+"Transaction"
+)}
+</strong>
+
+<p class="small">
+₦${Number(
+transaction.amount || 0
+).toLocaleString()}
+</p>
+
+`;
+
+list.appendChild(div);
+
+});
+
+}catch(error){
+
+list.textContent =
+"Transactions error: " +
+error.message;
+
+}
+
+}
+
+
+/* =================================
+   NAVIGATION
+================================= */
+
+function showSection(name){
+
+document
+.querySelectorAll(".section")
+.forEach(
+section=>{
+section.classList.remove(
+"active"
+);
+});
+
+
+const selected =
+document.getElementById(name);
+
+
+if(selected){
+
+selected.classList.add(
+"active"
+);
+
+}
+
+}
+
+
+/* =================================
+   LOGOUT
+================================= */
+
+async function logout(){
+
+try{
+
+await supabaseClient.auth.signOut();
+
+}catch(error){
+
+console.log(
+"Logout error:",
+error.message
+);
+
+}
+
+
+currentUser = null;
+
+currentProfile = null;
+
+
+document
+.getElementById("app")
+.classList.add("hidden");
+
+document
+.getElementById("authPage")
+.classList.remove("hidden");
+
+
+document
+.getElementById("fullName")
+.value = "";
+
+document
+.getElementById("email")
+.value = "";
+
+document
+.getElementById("password")
+.value = "";
+
+
+showMessage(
+"authMessage",
+"Logged out successfully.",
+"success"
+);
+
+}
+
+
+/* =================================
+   EXISTING SESSION
+================================= */
+
+async function checkSession(){
+
+try{
+
+const result =
+await supabaseClient.auth
+.getSession();
+
+
+if(result.error){
+
+showMessage(
+"authMessage",
+"SESSION ERROR: " +
+result.error.message,
+"error"
+);
+
+return;
+
+}
+
+
+if(
+result.data &&
+result.data.session &&
+result.data.session.user
+){
+
+currentUser =
+result.data.session.user;
+
+
+showMessage(
+"authMessage",
+"Existing session found. Loading profile...",
+"loading"
+);
+
+
+await loadProfile();
+
+}
+
+}catch(error){
+
+showMessage(
+"authMessage",
+"SESSION ERROR: " +
+error.message,
+"error"
+);
+
+}
+
+}
+
+
+/* =================================
+   HTML SECURITY
+================================= */
+
+function escapeHTML(value){
+
+return String(value ?? "")
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+
+}
+
+
+/* =================================
+   START
+================================= */
+
+checkSession();
+
+</script>
+
+</body>
+  </html>
