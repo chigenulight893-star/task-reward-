@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>TaskReward</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -24,12 +25,12 @@ body{
   max-width:480px;
   margin:auto;
   min-height:100vh;
-  background:#fff;
+  background:white;
 }
 
 header{
   background:#087f5b;
-  color:#fff;
+  color:white;
   padding:20px 18px;
   border-radius:0 0 20px 20px;
 }
@@ -43,16 +44,15 @@ header h1{
   font-size:14px;
 }
 
-.header-actions{
-  display:flex;
-  gap:8px;
+.header-logout{
+  background:white;
+  color:#087f5b;
+  padding:10px 15px;
+  border-radius:9px;
+  border:none;
+  font-weight:bold;
   margin-top:12px;
-}
-
-.header-actions button{
-  width:auto;
-  margin:0;
-  padding:9px 13px;
+  cursor:pointer;
 }
 
 .content{
@@ -164,7 +164,7 @@ label{
 }
 
 .hidden{
-  display:none!important;
+  display:none !important;
 }
 
 .auth{
@@ -243,89 +243,1133 @@ label{
   display:block;
 }
 
-.auth-title{
+.auth-toggle{
   text-align:center;
-  margin-bottom:20px;
+  margin-top:15px;
+  color:#66736e;
 }
 
-.small-note{
-  font-size:13px;
-  color:#66736e;
-  margin-top:8px;
+.auth-toggle button{
+  background:none;
+  color:#087f5b;
+  padding:0;
+  margin:0;
 }
 </style>
 </head>
 
 <body>
 
-<!-- AUTH -->
+
+<!-- ========================= -->
+<!-- LOGIN / SIGNUP -->
+<!-- ========================= -->
+
 <div id="authPage" class="auth">
-  <div class="auth-box">
 
-    <div class="auth-title">
-      <h1>TaskReward</h1>
-      <p>Complete available tasks and manage your account.</p>
-    </div>
+<div class="auth-box">
 
-    <div class="card">
+<h1>TaskReward</h1>
 
-      <input id="fullName"
-        type="text"
-        placeholder="Full name">
+<p>Complete tasks and manage your account.</p>
 
-      <input id="email"
-        type="email"
-        placeholder="Email address">
+<div class="card">
 
-      <input id="password"
-        type="password"
-        placeholder="Password">
+<input
+id="fullName"
+type="text"
+placeholder="Full name">
 
-      <button class="primary" onclick="signUp()">
-        Create Account
-      </button>
+<input
+id="email"
+type="email"
+placeholder="Email address">
 
-      <button class="secondary" onclick="login()">
-        Login
-      </button>
+<input
+id="password"
+type="password"
+placeholder="Password">
 
-      <div id="authMessage"></div>
+<button
+class="primary"
+onclick="signUp()">
+Create Account
+</button>
 
-    </div>
+<button
+class="secondary"
+onclick="login()">
+Login
+</button>
 
-  </div>
+<div id="authMessage"></div>
+
+</div>
+
+</div>
+
 </div>
 
 
-<!-- APP -->
+<!-- ========================= -->
+<!-- MAIN APP -->
+<!-- ========================= -->
+
 <div id="app" class="container hidden">
+
 
 <header>
 
-  <h1>TaskReward</h1>
+<h1>TaskReward</h1>
 
-  <div class="top-user">
-    Welcome, <span id="userName">User</span>
-  </div>
+<div class="top-user">
+Welcome, <span id="userName">User</span>
+</div>
 
-  <div class="header-actions">
+<!-- DIRECT LOGOUT BUTTON -->
 
-    <button
-      class="danger"
-      onclick="logout()">
-      🚪 Logout
-    </button>
-
-  </div>
+<button
+class="header-logout"
+onclick="logout()">
+🚪 Logout
+</button>
 
 </header>
 
 
 <div class="content">
 
+
 <!-- BALANCE -->
+
 <div class="balance">
 
-  <small>Available Balance</small>
+<small>Available Balance</small>
 
-  <h2
+<h2>
+₦<span id="balance">0.00</span>
+</h2>
+
+<div style="margin-top:10px">
+
+Account status:
+
+<span
+id="status"
+class="status inactive">
+Inactive
+</span>
+
+</div>
+
+</div>
+
+
+<!-- ACTIVATION -->
+
+<div
+id="activationBox"
+class="activation">
+
+<h3>🔐 Activate Your Account</h3>
+
+<p>
+Your account is currently inactive.
+Account activation costs ₦1,000.
+</p>
+
+<button
+class="primary"
+onclick="showSection('deposit')">
+Activate for ₦1,000
+</button>
+
+</div>
+
+
+<!-- MENU -->
+
+<div class="menu">
+
+<button onclick="showSection('home')">
+🏠 Home
+</button>
+
+<button onclick="showSection('tasks')">
+📋 Tasks
+</button>
+
+<button onclick="showSection('deposit')">
+➕ Deposit
+</button>
+
+<button onclick="showSection('withdraw')">
+💸 Withdraw
+</button>
+
+<button onclick="showSection('profile')">
+👤 Profile
+</button>
+
+<button onclick="showSection('transactions')">
+📜 Transactions
+</button>
+
+</div>
+
+
+<!-- HOME -->
+
+<div
+id="home"
+class="section active">
+
+<div class="card">
+
+<h3>Welcome</h3>
+
+<p>
+Complete available tasks after your account
+has been activated.
+</p>
+
+</div>
+
+</div>
+
+
+<!-- TASKS -->
+
+<div
+id="tasks"
+class="section">
+
+<div
+id="lockedTasks"
+class="card locked">
+
+🔒
+
+<h3>Tasks Locked</h3>
+
+<p>
+Activate your account before accessing tasks.
+</p>
+
+</div>
+
+<div
+id="taskList"
+class="card hidden">
+
+<h3>Available Tasks</h3>
+
+<div id="tasksContainer"></div>
+
+</div>
+
+</div>
+
+
+<!-- DEPOSIT -->
+
+<div
+id="deposit"
+class="section">
+
+<div class="card">
+
+<h3>💰 Deposit / Activation</h3>
+
+<p>
+Use the payment details provided by the administrator.
+</p>
+
+<br>
+
+<strong>Bank</strong>
+
+<p id="bankName">
+Loading...
+</p>
+
+<strong>Account Name</strong>
+
+<p id="accountName">
+Loading...
+</p>
+
+<strong>Account Number</strong>
+
+<p id="accountNumber">
+Loading...
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>Submit Payment</h3>
+
+<label>Amount</label>
+
+<input
+id="depositAmount"
+type="number"
+placeholder="1000">
+
+<label>Payment Reference</label>
+
+<input
+id="depositReference"
+type="text"
+placeholder="Payment reference">
+
+<button
+class="primary"
+onclick="submitDeposit()">
+Submit Deposit
+</button>
+
+<div id="depositMessage"></div>
+
+</div>
+
+</div>
+
+
+<!-- WITHDRAW -->
+
+<div
+id="withdraw"
+class="section">
+
+<div class="card">
+
+<h3>💸 Withdraw</h3>
+
+<p>
+Minimum withdrawal amount:
+<strong>₦1,000</strong>
+</p>
+
+<label>Amount</label>
+
+<input
+id="withdrawAmount"
+type="number"
+placeholder="1000">
+
+<label>Bank Name</label>
+
+<input
+id="withdrawBank"
+type="text"
+placeholder="Bank name">
+
+<label>Account Name</label>
+
+<input
+id="withdrawName"
+type="text"
+placeholder="Account name">
+
+<label>Account Number</label>
+
+<input
+id="withdrawAccount"
+type="text"
+placeholder="Account number">
+
+<button
+class="primary"
+onclick="requestWithdrawal()">
+Request Withdrawal
+</button>
+
+<div id="withdrawMessage"></div>
+
+</div>
+
+</div>
+
+
+<!-- PROFILE -->
+
+<div
+id="profile"
+class="section">
+
+<div class="card">
+
+<h3>👤 My Profile</h3>
+
+<p>
+<strong>Name:</strong>
+<span id="profileName"></span>
+</p>
+
+<p style="margin-top:8px">
+
+<strong>Email:</strong>
+<span id="profileEmail"></span>
+
+</p>
+
+</div>
+
+</div>
+
+
+<!-- TRANSACTIONS -->
+
+<div
+id="transactions"
+class="section">
+
+<div class="card">
+
+<h3>📜 Transaction History</h3>
+
+<div id="transactionList">
+No transactions yet.
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+</div>
+
+
+<script>
+
+
+// ===========================
+// SUPABASE
+// ===========================
+
+const SUPABASE_URL =
+"https://ztvliwkztcxmdoidowxn.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_QrM6y6lTW4M63DaGzO28_g_NeePqlwb";
+
+const supabaseClient =
+supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+let currentUser=null;
+let currentProfile=null;
+
+
+// ===========================
+// SIGN UP
+// ===========================
+
+async function signUp(){
+
+const name=
+document.getElementById("fullName")
+.value.trim();
+
+const email=
+document.getElementById("email")
+.value.trim();
+
+const password=
+document.getElementById("password")
+.value;
+
+const message=
+document.getElementById("authMessage");
+
+
+if(!name || !email || !password){
+
+message.innerHTML=
+'<p class="error">Please fill all fields.</p>';
+
+return;
+}
+
+
+if(password.length < 6){
+
+message.innerHTML=
+'<p class="error">Password must be at least 6 characters.</p>';
+
+return;
+}
+
+
+const {data,error}=
+await supabaseClient.auth.signUp({
+
+email:email,
+
+password:password
+
+});
+
+
+if(error){
+
+message.innerHTML=
+`<p class="error">${escapeHTML(error.message)}</p>`;
+
+return;
+}
+
+
+if(!data.user){
+
+message.innerHTML=
+'<p class="error">Account could not be created.</p>';
+
+return;
+}
+
+
+const {error:profileError}=
+await supabaseClient
+.from("profiles")
+.insert({
+
+id:data.user.id,
+
+full_name:name,
+
+username:email.split("@")[0]
+
+});
+
+
+if(profileError){
+
+message.innerHTML=
+`<p class="error">${escapeHTML(profileError.message)}</p>`;
+
+return;
+}
+
+
+message.innerHTML=
+'<p class="success">Account created successfully. You can now login.</p>';
+
+}
+
+
+// ===========================
+// LOGIN
+// ===========================
+
+async function login(){
+
+const email=
+document.getElementById("email")
+.value.trim();
+
+const password=
+document.getElementById("password")
+.value;
+
+const message=
+document.getElementById("authMessage");
+
+
+if(!email || !password){
+
+message.innerHTML=
+'<p class="error">Enter your email and password.</p>';
+
+return;
+}
+
+
+const {data,error}=
+await supabaseClient.auth
+.signInWithPassword({
+
+email:email,
+
+password:password
+
+});
+
+
+if(error){
+
+message.innerHTML=
+`<p class="error">${escapeHTML(error.message)}</p>`;
+
+return;
+}
+
+
+currentUser=data.user;
+
+await loadDashboard();
+
+}
+
+
+// ===========================
+// LOAD DASHBOARD
+// ===========================
+
+async function loadDashboard(){
+
+const {data:profile,error}=
+await supabaseClient
+.from("profiles")
+.select("*")
+.eq("id",currentUser.id)
+.single();
+
+
+if(error){
+
+alert(error.message);
+
+await supabaseClient.auth.signOut();
+
+return;
+}
+
+
+currentProfile=profile;
+
+
+document
+.getElementById("authPage")
+.classList.add("hidden");
+
+
+document
+.getElementById("app")
+.classList.remove("hidden");
+
+
+document
+.getElementById("userName")
+.textContent=
+profile.full_name || "User";
+
+
+document
+.getElementById("profileName")
+.textContent=
+profile.full_name || "User";
+
+
+document
+.getElementById("profileEmail")
+.textContent=
+currentUser.email;
+
+
+document
+.getElementById("balance")
+.textContent=
+Number(profile.balance || 0)
+.toLocaleString(
+"en-NG",
+{
+minimumFractionDigits:2
+}
+);
+
+
+updateActivationUI();
+
+loadSettings();
+
+loadTasks();
+
+loadTransactions();
+
+}
+
+
+// ===========================
+// ACTIVATION UI
+// ===========================
+
+function updateActivationUI(){
+
+const status=
+document.getElementById("status");
+
+const activation=
+document.getElementById("activationBox");
+
+const locked=
+document.getElementById("lockedTasks");
+
+const taskList=
+document.getElementById("taskList");
+
+
+if(currentProfile.is_activated){
+
+status.textContent="Activated";
+
+status.className=
+"status active";
+
+activation.classList.add("hidden");
+
+locked.classList.add("hidden");
+
+taskList.classList.remove("hidden");
+
+}else{
+
+status.textContent="Inactive";
+
+status.className=
+"status inactive";
+
+activation.classList.remove("hidden");
+
+locked.classList.remove("hidden");
+
+taskList.classList.add("hidden");
+
+}
+
+}
+
+
+// ===========================
+// LOAD ADMIN PAYMENT SETTINGS
+// ===========================
+
+async function loadSettings(){
+
+const {data,error}=
+await supabaseClient
+.from("admin_settings")
+.select("*")
+.limit(1)
+.single();
+
+
+if(error){
+
+console.log(error);
+
+return;
+}
+
+
+document
+.getElementById("bankName")
+.textContent=
+data.bank_name || "Not provided";
+
+
+document
+.getElementById("accountName")
+.textContent=
+data.account_name || "Not provided";
+
+
+document
+.getElementById("accountNumber")
+.textContent=
+data.account_number || "Not provided";
+
+}
+
+
+// ===========================
+// LOAD TASKS
+// ===========================
+
+async function loadTasks(){
+
+if(!currentProfile.is_activated)
+return;
+
+
+const {data,error}=
+await supabaseClient
+.from("tasks")
+.select("*")
+.eq("status","active")
+.order(
+"created_at",
+{
+ascending:false
+}
+);
+
+
+const container=
+document.getElementById("tasksContainer");
+
+
+if(error){
+
+container.innerHTML=
+`<p class="error">${escapeHTML(error.message)}</p>`;
+
+return;
+}
+
+
+if(!data || data.length===0){
+
+container.innerHTML=
+"<p>No tasks available right now.</p>";
+
+return;
+}
+
+
+container.innerHTML="";
+
+
+data.forEach(task=>{
+
+const div=
+document.createElement("div");
+
+div.className="task";
+
+
+div.innerHTML=`
+
+<h4>
+${escapeHTML(task.title)}
+</h4>
+
+<p>
+${escapeHTML(task.description || "")}
+</p>
+
+<p>
+Reward:
+<strong>
+₦${Number(task.reward || 0).toLocaleString()}
+</strong>
+</p>
+
+`;
+
+
+container.appendChild(div);
+
+});
+
+}
+
+
+// ===========================
+// DEPOSIT
+// ===========================
+
+async function submitDeposit(){
+
+const amount=
+Number(
+document
+.getElementById("depositAmount")
+.value
+);
+
+const reference=
+document
+.getElementById("depositReference")
+.value.trim();
+
+const message=
+document.getElementById("depositMessage");
+
+
+if(!amount || amount<=0){
+
+message.innerHTML=
+'<p class="error">Enter a valid amount.</p>';
+
+return;
+}
+
+
+const {error}=
+await supabaseClient
+.from("deposits")
+.insert({
+
+user_id:currentUser.id,
+
+amount:amount,
+
+reference:reference,
+
+status:"pending"
+
+});
+
+
+if(error){
+
+message.innerHTML=
+`<p class="error">${escapeHTML(error.message)}</p>`;
+
+return;
+}
+
+
+message.innerHTML=
+'<p class="success">Deposit submitted for review.</p>';
+
+}
+
+
+// ===========================
+// WITHDRAWAL
+// ===========================
+
+async function requestWithdrawal(){
+
+const amount=
+Number(
+document
+.getElementById("withdrawAmount")
+.value
+);
+
+const bank=
+document
+.getElementById("withdrawBank")
+.value.trim();
+
+const name=
+document
+.getElementById("withdrawName")
+.value.trim();
+
+const account=
+document
+.getElementById("withdrawAccount")
+.value.trim();
+
+const message=
+document
+.getElementById("withdrawMessage");
+
+
+if(!currentProfile.is_activated){
+
+message.innerHTML=
+'<p class="error">Your account must be activated first.</p>';
+
+return;
+}
+
+
+if(amount < 1000){
+
+message.innerHTML=
+'<p class="error">Minimum withdrawal is ₦1,000.</p>';
+
+return;
+}
+
+
+if(!bank || !name || !account){
+
+message.innerHTML=
+'<p class="error">Please complete your bank details.</p>';
+
+return;
+}
+
+
+if(amount > Number(currentProfile.balance || 0)){
+
+message.innerHTML=
+'<p class="error">Insufficient balance.</p>';
+
+return;
+}
+
+
+const {error}=
+await supabaseClient
+.from("withdrawals")
+.insert({
+
+user_id:currentUser.id,
+
+amount:amount,
+
+bank_name:bank,
+
+account_name:name,
+
+account_number:account,
+
+status:"pending"
+
+});
+
+
+if(error){
+
+message.innerHTML=
+`<p class="error">${escapeHTML(error.message)}</p>`;
+
+return;
+}
+
+
+message.innerHTML=
+'<p class="success">Withdrawal request submitted for review.</p>';
+
+}
+
+
+// ===========================
+// TRANSACTIONS
+// ===========================
+
+async function loadTransactions(){
+
+const {data,error}=
+await supabaseClient
+.from("transactions")
+.select("*")
+.eq("user_id",currentUser.id)
+.order(
+"created_at",
+{
+ascending:false
+}
+);
+
+
+const list=
+document.getElementById("transactionList");
+
+
+if(error){
+
+list.innerHTML=
+`<p class="error">${escapeHTML(error.message)}</p>`;
+
+return;
+}
+
+
+if(!data || data.length===0){
+
+list.textContent=
+"No transactions yet.";
+
+return;
+}
+
+
+list.innerHTML="";
+
+
+data.forEach(transaction=>{
+
+const item=
+document.createElement("div");
+
+item.className="task";
+
+
+item.innerHTML=`
+
+<strong>
+${escapeHTML(transaction.type)}
+</strong>
+
+<p>
+₦${Number(transaction.amount || 0).toLocaleString()}
+</p>
+
+<p>
+${escapeHTML(transaction.description || "")}
+</p>
+
+`;
+
+
+list.appendChild(item);
+
+});
+
+}
+
+
+// ===========================
+// NAVIGATION
+// ===========================
+
+function showSection(section){
+
+document
+.querySelectorAll(".section")
+.forEach(element=>{
+
+element.classList.remove("active");
+
+});
+
+
+const selected=
+document.getElementById(section);
+
+
+if(selected){
+
+selected.classList.add("active");
+
+}
+
+}
+
+
+// ===========================
+// LOGOUT
+// ===========================
+
+async function logout(){
+
+try{
+
+await supabaseClient.auth.signOut({
+scope:"local"
+});
+
+}catch(error){
+
+console.log(error);
+
+}
+
+
+// Clear local session information
+
+currentUser=null;
+
+currentProfile=null;
+
+
+// Return to login screen
+
+document
+.getElementById("app")
+.classList
