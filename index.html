@@ -921,13 +921,13 @@ showMessage(
 );
 
 
+
 const result =
 await supabaseClient
 .from("profiles")
-.select("*")
-.eq("id",currentUser.id)
-.maybeSingle();
-
+.select("id,full_name,username,balance,is_admin,is_activated")
+.eq("id", currentUser.id)
+.single();
 
 if(result.error){
 
