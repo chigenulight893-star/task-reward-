@@ -1805,7 +1805,7 @@ await supabaseClient
 "id",
 currentUser.id
 )
-.single();
+.maybesingle():
 
 
 if(error){
