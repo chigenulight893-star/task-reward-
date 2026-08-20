@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskReward</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f7fb;
+  color:#172033;
+}
+
+button,input{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.hidden{
+  display:none!important;
+}
+
+/* AUTH */
+
+#authPage{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  background:linear-gradient(135deg,#eef5ff,#ffffff);
+}
+
+.auth-box{
+  width:100%;
+  max-width:420px;
+  background:#fff;
+  padding:28px 22px;
+  border-radius:22px;
+  box-shadow:0 10px 35px rgba(0,0,0,.08);
+}
+
+.logo{
+  font-size:30px;
+  font-weight:800;
+  color:#2563eb;
+  margin-bottom:8px;
+}
+
+.subtitle{
+  color:#718096;
+  margin-bottom:25px;
+}
+
+h2{
+  margin-bottom:8px;
+}
+
+.small{
+  color:#718096;
+  font-size:13px;
+  line-height:1.5;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  margin-top:12px;
+  border:1px solid #d9e0ea;
+  border-radius:11px;
+  outline:none;
+}
+
+input:focus{
+  border-color:#2563eb;
+}
+
+.main-btn{
+  width:100%;
+  margin-top:15px;
+  padding:14px;
+  border:0;
+  border-radius:11px;
+  background:#2563eb;
+  color:white;
+  font-weight:bold;
+}
+
+.main-btn:disabled{
+  opacity:.6;
+}
+
+.switch{
+  text-align:center;
+  margin-top:18px;
+  color:#718096;
+  font-size:14px;
+}
+
+.switch button{
+  border:0;
+  background:none;
+  color:#2563eb;
+  font-weight:bold;
+}
+
+.message{
+  margin-top:15px;
+  padding:12px;
+  border-radius:10px;
+  font-size:14px;
+  line-height:1.5;
+}
+
+.error{
+  background:#ffe8e8;
+  color:#b42318;
+}
+
+.success{
+  background:#e5f8ee;
+  color:#087f5b;
+}
+
+.loading{
+  background:#fff6d8;
+  color:#765b00;
+}
+
+
+/* APP */
+
+#app{
+  max-width:520px;
+  min-height:100vh;
+  margin:auto;
+  background:#f4f7fb;
+  padding-bottom:90px;
+}
+
+.topbar{
+  background:white;
+  padding:18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid #e9edf3;
+}
+
+.brand{
+  font-size:23px;
+  font-weight:800;
+  color:#2563eb;
+}
+
+.menu-btn{
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:50%;
+  background:#eef3fb;
+  font-size:20px;
+}
+
+.content{
+  padding:18px;
+}
+
+.activation{
+  padding:17px;
+  border-radius:17px;
+  margin-bottom:18px;
+  background:#fff8e5;
+  border:1px solid #f0d58b;
+}
+
+.activation.active{
+  background:#effcf4;
+  border-color:#a8ebc5;
+}
+
+.activation-title{
+  font-weight:bold;
+  font-size:17px;
+}
+
+.activation-text{
+  margin-top:5px;
+  font-size:13px;
+  color:#687587;
+}
+
+.balance{
+  background:linear-gradient(135deg,#243ee8,#36a9ef);
+  color:white;
+  border-radius:24px;
+  padding:23px;
+  margin-bottom:18px;
+}
+
+.balance-label{
+  opacity:.85;
+}
+
+.amount{
+  font-size:37px;
+  font-weight:800;
+  margin-top:8px;
+}
+
+.wallets{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:22px;
+}
+
+.wallet{
+  background:rgba(255,255,255,.15);
+  padding:12px 8px;
+  border-radius:12px;
+}
+
+.wallet small{
+  display:block;
+  opacity:.8;
+}
+
+.wallet strong{
+  display:block;
+  margin-top:6px;
+}
+
+.card{
+  background:white;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:14px;
+}
+
+.section-title{
+  font-size:21px;
+  font-weight:bold;
+  margin-bottom:14px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.stat{
+  background:white;
+  padding:17px;
+  border-radius:17px;
+}
+
+.stat-label{
+  color:#7b8494;
+  font-size:13px;
+}
+
+.stat-value{
+  font-weight:bold;
+  font-size:19px;
+  margin-top:7px;
+}
+
+.quick{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:22px;
+}
+
+.quick button{
+  background:white;
+  border:0;
+  border-radius:17px;
+  padding:14px 5px;
+}
+
+.quick-icon{
+  font-size:23px;
+  margin-bottom:7px;
+}
+
+.quick-name{
+  font-size:12px;
+  font-weight:bold;
+}
+
+.section{
+  display:none;
+}
+
+.section.active{
+  display:block;
+}
+
+.row{
+  padding:13px 0;
+  border-bottom:1px solid #edf0f5;
+}
+
+.row:last-child{
+  border-bottom:0;
+}
+
+.label{
+  color:#7b8494;
+  font-size:12px;
+}
+
+.value{
+  font-weight:bold;
+  margin-top:5px;
+  word-break:break-word;
+}
+
+.form-btn{
+  width:100%;
+  padding:13px;
+  border:0;
+  border-radius:10px;
+  background:#2563eb;
+  color:white;
+  font-weight:bold;
+  margin-top:8px;
+}
+
+.logout{
+  width:100%;
+  padding:14px;
+  border:0;
+  border-radius:11px;
+  background:#ffe7e7;
+  color:#b42318;
+  font-weight:bold;
+}
+
+.bottom{
+  position:fixed;
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:100%;
+  max-width:520px;
+  height:72px;
+  background:white;
+  border-top:1px solid #e5e9ef;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+}
+
+.nav{
+  border:0;
+  background:white;
+  color:#7b8494;
+  font-size:11px;
+}
+
+.nav.active{
+  color:#2563eb;
+  font-weight:bold;
+}
+
+.nav-icon{
+  font-size:20px;
+  display:block;
+  margin-bottom:4px;
+}
+
+@media(max-width:370px){
+  .wallets{
+    grid-template-columns:1fr;
+  }
+
+  .quick{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+
+
+<!-- AUTH -->
+
+<div id="authPage">
+
+<div class="auth-box">
+
+<div class="logo">TaskReward</div>
+
+<div class="subtitle">
+Complete tasks and earn rewards.
+</div>
+
+
+<!-- REGISTER -->
+
+<div id="registerBox">
+
+<h2>Create Account</h2>
+
+<p class="small">
+Create your TaskReward account.
+</p>
+
+<input
+id="name"
+type="text"
+placeholder="Full name">
+
+<input
+id="email"
+type="email"
+placeholder="Email address">
+
+<input
+id="password"
+type="password"
+placeholder="Password">
+
+<button
+id="registerBtn"
+class="main-btn"
+type="button">
+Create Account
+</button>
+
+<div class="switch">
+Already have an account?
+
+<button
+id="loginSwitch"
+type="button">
+Login
+</button>
+</div>
+
+</div>
+
+
+<!-- LOGIN -->
+
+<div
+id="loginBox"
+class="hidden">
+
+<h2>Login</h2>
+
+<p class="small">
+Login to your TaskReward account.
+</p>
+
+<input
+id="loginEmail"
+type="email"
+placeholder="Email address">
+
+<input
+id="loginPassword"
+type="password"
+placeholder="Password">
+
+<button
+id="loginBtn"
+class="main-btn"
+type="button">
+Login
+</button>
+
+<div class="switch">
+Don't have an account?
+
+<button
+id="registerSwitch"
+type="button">
+Create account
+</button>
+</div>
+
+</div>
+
+
+<div
+id="message"
+class="message hidden">
+</div>
+
+</div>
+
+</div>
+
+
+<!-- APP -->
+
+<div
+id="app"
+class="hidden">
+
+<div class="topbar">
+
+<div class="brand">
+TaskReward
+</div>
+
+<button
+id="logoutTop"
+class="menu-btn"
+type="button">
+↪
+</button>
+
+</div>
+
+
+<div class="content">
+
+
+<div
+id="activation"
+class="activation">
+
+<div
+id="activationTitle"
+class="activation-title">
+Account Inactive
+</div>
+
+<div
+id="activationText"
+class="activation-text">
+Activate your account to unlock earning features.
+</div>
+
+</div>
+
+
+<!-- HOME -->
+
+<section
+id="home"
+class="section active">
+
+<div class="balance">
+
+<div class="balance-label">
+Total Balance
+</div>
+
+<div class="amount">
+₦<span id="balance">0.00</span>
+</div>
+
+<div class="wallets">
+
+<div class="wallet">
+
+<small>Task Wallet</small>
+
+<strong>
+₦<span id="taskWallet">0.00</span>
+</strong>
+
+</div>
+
+<div class="wallet">
+
+<small>Deposit Wallet</small>
+
+<strong>
+₦<span id="depositWallet">0.00</span>
+</strong>
+
+</div>
+
+<div class="wallet">
+
+<small>Affiliate Wallet</small>
+
+<strong>
+₦<span id="affiliateWallet">0.00</span>
+</strong>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="stats">
+
+<div class="stat">
+
+<div class="stat-label">
+Total Earned
+</div>
+
+<div class="stat-value">
+₦<span id="earned">0.00</span>
+</div>
+
+</div>
+
+<div class="stat">
+
+<div class="stat-label">
+Total Withdrawn
+</div>
+
+<div class="stat-value">
+₦<span id="withdrawn">0.00</span>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="section-title">
+Quick Actions
+</div>
+
+<div class="quick">
+
+<button data-page="tasks">
+<div class="quick-icon">📋</div>
+<div class="quick-name">Tasks</div>
+</button>
+
+<button data-page="referral">
+<div class="quick-icon">👥</div>
+<div class="quick-name">Refer</div>
+</button>
+
+<button data-page="wallet">
+<div class="quick-icon">💳</div>
+<div class="quick-name">Wallet</div>
+</button>
+
+<button data-page="profile">
+<div class="quick-icon">👤</div>
+<div class="quick-name">Profile</div>
+</button>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Welcome, <span id="welcomeName">User</span> 👋
+</h3>
+
+<p class="small">
+Complete available tasks and manage your TaskReward account.
+</p>
+
+</div>
+
+</section>
+
+
+<!-- TASKS -->
+
+<section
+id="tasks"
+class="section">
+
+<div class="section-title">
+📋 Tasks
+</div>
+
+<div class="card">
+
+<h3>
+Available Tasks
+</h3>
+
+<p class="small">
+No tasks have been added yet.
+</p>
+
+</div>
+
+</section>
+
+
+<!-- REFERRAL -->
+
+<section
+id="referral"
+class="section">
+
+<div class="section-title">
+👥 Referral
+</div>
+
+<div class="card">
+
+<h3>
+Invite Friends
+</h3>
+
+<p class="small">
+Your referral system will appear here.
+</p>
+
+</div>
+
+</section>
+
+
+<!-- WALLET -->
+
+<section
+id="wallet"
+class="section">
+
+<div class="section-title">
+💳 Wallet
+</div>
+
+<div class="card">
+
+<h3>
+Available Balance
+</h3>
+
+<div
+style="font-size:32px;font-weight:bold;color:#2563eb;margin-top:10px">
+
+₦<span id="walletBalance">0.00</span>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- PROFILE -->
+
+<section
+id="profile"
+class="section">
+
+<div class="section-title">
+👤 Profile
+</div>
+
+<div class="card">
+
+<div class="row">
+
+<div class="label">
+Full Name
+</div>
+
+<div
+id="profileName"
+class="value">
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="label">
+Email
+</div>
+
+<div
+id="profileEmail"
+class="value">
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="label">
+Account Status
+</div>
+
+<div
+id="profileStatus"
+class="value">
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="label">
+Role
+</div>
+
+<div
+id="profileRole"
+class="value">
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="label">
+User ID
+</div>
+
+<div
+id="profileID"
+class="value"
+style="font-size:11px">
+</div>
+
+</div>
+
+</div>
+
+<button
+id="logoutBtn"
+class="logout"
+type="button">
+Logout
+</button>
+
+</section>
+
+
+</div>
+
+
+<!-- BOTTOM -->
+
+<div class="bottom">
+
+<button
+class="nav active"
+data-page="home"
+type="button">
+
+<span class="nav-icon">⌂</span>
+Home
+
+</button>
+
+<button
+class="nav"
+data-page="tasks"
+type="button">
+
+<span class="nav-icon">☷</span>
+Tasks
+
+</button>
+
+<button
+class="nav"
+data-page="referral"
+type="button">
+
+<span class="nav-icon">👥</span>
+Refer
+
+</button>
+
+<button
+class="nav"
+data-page="wallet"
+type="button">
+
+<span class="nav-icon">▣</span>
+Wallet
+
+</button>
+
+<button
+class="nav"
+data-page="profile"
+type="button">
+
+<span class="nav-icon">●</span>
+Profile
+
+</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   SUPABASE CONNECTION
+========================================= */
+
+const SUPABASE_URL =
+"https://ztvliwkztcxmdoidowxn.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_QrM6y6lTW4M63DaGzO28_g_NeePqlwb";
+
+const client =
+window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+/* =========================================
+  
